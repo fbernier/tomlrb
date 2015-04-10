@@ -1,15 +1,18 @@
 require "tomlrb/version"
-require "tomlrb/generated_parser"
 require "tomlrb/scanner"
 require "tomlrb/parser"
 require "tomlrb/handler"
 
 module Tomlrb
-  def self.parse(string_or_io)
+  def self.parse(string_or_io, **options)
     io = string_or_io.is_a?(String) ? StringIO.new(string_or_io) : string_or_io
     scanner = Scanner.new(io)
     parser = Parser.new(scanner)
     handler = parser.parse
-    handler.result
+    handler.output
+  end
+
+  def self.load_file(path, **options)
+    Tomlrb.parse(File.read(path), options)
   end
 end

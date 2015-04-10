@@ -2,8 +2,9 @@ require 'strscan'
 
 module Tomlrb
   class Scanner
-    IDENTIFIER = /\w+/
-    SPACES = /\A\s+/
+    COMMENT = /#.+/
+    IDENTIFIER = /[\w?\.]+/
+    SPACE = /\A\s+/
     STRING_SINGLE = /"[^"]*"/
     STRING_MULTI = /"[^"]*"/
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(z|[-+]\d{2}:\d{2})/i
@@ -19,7 +20,8 @@ module Tomlrb
       return if @ss.eos?
 
       case
-      when @ss.scan(SPACES) then next_token
+      when @ss.scan(SPACE) then next_token
+      when @ss.scan(COMMENT) then next_token
       when text = @ss.scan(DATETIME) then [:DATETIME, text]
       when text = @ss.scan(STRING_SINGLE) then [:STRING, text[1..-2]]
       when text = @ss.scan(NUMBER) then [:NUMBER, text]

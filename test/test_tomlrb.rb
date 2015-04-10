@@ -1,7 +1,7 @@
 require 'minitest_helper'
 
 describe Tomlrb::Parser do
-  it "herp" do
-    Tomlrb::Parser.new.parse('yo')
+  it "parses a toml v0.4.0 file" do
+    parsed_file = Tomlrb.load_file('./test/example-v0.4.0.toml')
   end
 end

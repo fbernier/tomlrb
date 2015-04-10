@@ -1,5 +1,6 @@
+require "tomlrb/generated_parser"
+
 class Tomlrb::Parser < Tomlrb::GeneratedParser
-  attr_reader :handler
 
   def initialize(tokenizer, handler = Tomlrb::Handler.new)
     @tokenizer = tokenizer
@@ -14,6 +15,6 @@ class Tomlrb::Parser < Tomlrb::GeneratedParser
 
   def parse
     do_parse
-    handler
+    @handler
   end
 end

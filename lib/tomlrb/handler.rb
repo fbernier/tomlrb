@@ -1,9 +1,9 @@
 module Tomlrb
   class Handler
-    attr_reader :stack
+    attr_reader :output
 
     def initialize
-      @output = Hash.new {|h, k| h[k] = {} }
+      @output = Hash.new { |h, k| h[k] = {} }
       @current = @output
       @stack = []
     end
@@ -18,7 +18,7 @@ module Tomlrb
     end
 
     def start_array
-      push [:array]
+      push([:array])
     end
 
     def end_array
@@ -33,10 +33,5 @@ module Tomlrb
     def push(o)
       @stack << o
     end
-
-    def result
-      @output
-    end
-
   end
 end

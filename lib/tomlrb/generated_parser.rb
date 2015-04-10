@@ -157,7 +157,7 @@ Racc_debug_parser = false
 
 # reduce 4 omitted
 
-module_eval(<<'.,.,', 'parser.y', 14)
+module_eval(<<'.,.,', 'parser.y', 12)
   def _reduce_5(val, _values, result)
      @handler.set_context(val[1]) 
     result
@@ -166,7 +166,7 @@ module_eval(<<'.,.,', 'parser.y', 14)
 
 # reduce 6 omitted
 
-module_eval(<<'.,.,', 'parser.y', 21)
+module_eval(<<'.,.,', 'parser.y', 18)
   def _reduce_7(val, _values, result)
      @handler.end_array 
     result
@@ -175,7 +175,7 @@ module_eval(<<'.,.,', 'parser.y', 21)
 
 # reduce 8 omitted
 
-module_eval(<<'.,.,', 'parser.y', 23)
+module_eval(<<'.,.,', 'parser.y', 22)
   def _reduce_9(val, _values, result)
      @handler.end_array 
     result
@@ -193,14 +193,14 @@ module_eval(<<'.,.,', 'parser.y', 26)
 
 # reduce 12 omitted
 
-module_eval(<<'.,.,', 'parser.y', 30)
+module_eval(<<'.,.,', 'parser.y', 32)
   def _reduce_13(val, _values, result)
      @handler.assign(val[0]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 34)
+module_eval(<<'.,.,', 'parser.y', 35)
   def _reduce_14(val, _values, result)
      @handler.push(val[0]) 
     result
@@ -215,21 +215,21 @@ module_eval(<<'.,.,', 'parser.y', 34)
 
 # reduce 18 omitted
 
-module_eval(<<'.,.,', 'parser.y', 44)
+module_eval(<<'.,.,', 'parser.y', 43)
   def _reduce_19(val, _values, result)
      n = val[0]; result = n.count('.') > 0 ? n.to_f : n.to_i 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 45)
+module_eval(<<'.,.,', 'parser.y', 44)
   def _reduce_20(val, _values, result)
      result = true 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 46)
+module_eval(<<'.,.,', 'parser.y', 45)
   def _reduce_21(val, _values, result)
      result = false 
     result
