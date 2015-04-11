@@ -8,9 +8,26 @@ rule
   expression
     : table
     | assignment
+    | inline_table_assignment
     ;
   table
     : '[' identifier ']' { @handler.set_context(val[1]) }
+    ;
+  inline_table_assignment
+    : inline_table_start inline_table_end
+    ;
+  inline_table_start
+    : identifier '=' '{' { @handler.set_context(val[0]) }
+    ;
+  inline_table_end
+    : inline_values '}'
+    ;
+  inline_values
+    : inline_values ',' assignment
+    | assignment
+    ;
+  assignment
+    : identifier '=' value { @handler.assign(val[0]) }
     ;
   array
     : start_array array_continued
@@ -29,9 +46,6 @@ rule
   end_array
     : ']'
     ;
-  assignment
-    : identifier '=' value { @handler.assign(val[0]) }
-    ;
   value
     : scalar { @handler.push(val[0]) }
     | array
@@ -44,7 +58,7 @@ rule
     | NUMBER { n = val[0]; result = n.count('.') > 0 ? n.to_f : n.to_i }
     | TRUE   { result = true }
     | FALSE  { result = false }
-    | DATETIME
+    | DATETIME { result = Time.parse(val[0]) }
     ;
   string
     : STRING
