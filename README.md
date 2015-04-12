@@ -2,6 +2,14 @@
 
 A racc based [toml](https://github.com/toml-lang/toml) parser. It's still a work in progress so it doesn't support the full spec yet.
 
+
+## TODO
+
+* Array of tables
+* Extended string support
+* Floats / Exponents support
+* Tests
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -37,3 +45,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+### Thanks
+
+Thanks to [@jpbougie](https://github.com/jpbougie) for the crash course on  the Chomsky hierarchy and general tips.
