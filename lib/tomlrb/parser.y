@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING DATETIME NUMBER TRUE FALSE
+token IDENTIFIER STRING DATETIME INTEGER FLOAT TRUE FALSE
 rule
   expressions
     : expressions expression
@@ -59,7 +59,8 @@ rule
     | literal
     ;
   literal
-    | NUMBER { n = val[0]; result = n.count('.') > 0 ? n.to_f : n.to_i }
+    | FLOAT { result = val[0].to_f }
+    | INTEGER { result = val[0].to_i }
     | TRUE   { result = true }
     | FALSE  { result = false }
     | DATETIME { result = Time.parse(val[0]) }

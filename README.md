@@ -6,7 +6,6 @@ A racc based [toml](https://github.com/toml-lang/toml) parser. It's still a work
 ## TODO
 
 * Extended string support
-* Floats / Exponents support
 * Tests
 
 ## Installation
