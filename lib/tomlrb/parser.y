@@ -7,6 +7,7 @@ rule
     ;
   expression
     : table
+    | array_of_tables
     | assignment
     | inline_table_assignment
     ;
@@ -45,6 +46,9 @@ rule
     ;
   end_array
     : ']'
+    ;
+  array_of_tables
+    : '[' '[' identifier ']' ']' { @handler.set_context(val[2], is_array_of_tables: true) }
     ;
   value
     : scalar { @handler.push(val[0]) }

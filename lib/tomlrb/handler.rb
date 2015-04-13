@@ -3,16 +3,37 @@ module Tomlrb
     attr_reader :output
 
     def initialize
-      @output = Hash.new { |h, k| h[k] = {} }
+      @output = {}
       @current = @output
       @stack = []
     end
 
-    def set_context(name)
+    def set_context(name, is_array_of_tables: false)
       @current = @output
-      name.split('.').each do |key|
-        @current[key] ||= {}
-        @current = @current[key]
+
+      deal_with_array_of_table(name, is_array_of_tables) do |identifiers|
+        identifiers.each do |k|
+          if @current[k].is_a?(Array)
+            @current[k] << {} if @current[k].empty?
+            @current = @current[k].last
+          else
+            @current[k] ||= {}
+            @current = @current[k]
+          end
+        end
+      end
+    end
+
+    def deal_with_array_of_table(name, is_array_of_tables)
+      identifiers = name.split('.')
+      last_identifier = identifiers.pop if is_array_of_tables
+
+      yield(identifiers)
+
+      if is_array_of_tables
+        @current[last_identifier] ||= []
+        @current[last_identifier] << {}
+        @current = @current[last_identifier].last
       end
     end
 

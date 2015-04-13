@@ -5,7 +5,6 @@ class Tomlrb::Parser < Tomlrb::GeneratedParser
   def initialize(tokenizer, handler = Tomlrb::Handler.new)
     @tokenizer = tokenizer
     @handler   = handler
-    @yydebug = true
     super()
   end
 

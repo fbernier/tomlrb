@@ -5,7 +5,6 @@ A racc based [toml](https://github.com/toml-lang/toml) parser. It's still a work
 
 ## TODO
 
-* Array of tables
 * Extended string support
 * Floats / Exponents support
 * Tests
