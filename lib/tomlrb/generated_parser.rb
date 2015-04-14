@@ -200,7 +200,7 @@ module_eval(<<'.,.,', 'parser.y', 14)
 
 module_eval(<<'.,.,', 'parser.y', 20)
   def _reduce_9(val, _values, result)
-     @handler.set_context(val[0]) 
+     @handler.set_context(val[0], is_inline_context: true) 
     result
   end
 .,.,

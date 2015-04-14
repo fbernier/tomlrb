@@ -18,7 +18,7 @@ rule
     : inline_table_start inline_table_end
     ;
   inline_table_start
-    : identifier '=' '{' { @handler.set_context(val[0]) }
+    : identifier '=' '{' { @handler.set_context(val[0], is_inline_context: true) }
     ;
   inline_table_end
     : inline_values '}'

@@ -8,8 +8,8 @@ module Tomlrb
       @stack = []
     end
 
-    def set_context(name, is_array_of_tables: false)
-      @current = @output
+    def set_context(name, is_array_of_tables: false, is_inline_context: false)
+      @current = @output unless is_inline_context
 
       deal_with_array_of_table(name, is_array_of_tables) do |identifiers|
         identifiers.each do |k|
