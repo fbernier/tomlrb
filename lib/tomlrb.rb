@@ -1,3 +1,4 @@
+require 'time'
 require "tomlrb/version"
 require "tomlrb/scanner"
 require "tomlrb/parser"

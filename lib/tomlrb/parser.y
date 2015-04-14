@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING DATETIME INTEGER FLOAT TRUE FALSE
+token IDENTIFIER STRING_MULTI STRING_SINGLE LITERAL_MULTI LITERAL_SINGLE DATETIME INTEGER FLOAT TRUE FALSE
 rule
   expressions
     : expressions expression
@@ -88,7 +88,10 @@ rule
     | DATETIME { result = Time.parse(val[0]) }
     ;
   string
-    : STRING
+    : STRING_MULTI { result = self.class.unescape_chars(val[0]) }
+    | STRING_SINGLE { result = self.class.unescape_chars(val[0]) }
+    | LITERAL_MULTI { result = self.class.unescape_chars(self.class.strip_spaces(val[0])) }
+    | LITERAL_SINGLE { result = self.class.strip_spaces(val[0]) }
     ;
   identifier:
     : IDENTIFIER
