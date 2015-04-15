@@ -8,8 +8,8 @@ module Tomlrb
       @stack = []
     end
 
-    def set_context(name, is_array_of_tables: false, is_inline_context: false)
-      @current = @output unless is_inline_context
+    def set_context(name, is_array_of_tables: false)
+      @current = @output
 
       deal_with_array_of_table(name, is_array_of_tables) do |identifiers|
         identifiers.each do |k|
@@ -47,6 +47,19 @@ module Tomlrb
 
     def start_array
       push([:array])
+    end
+
+    def start_inline
+      push([:inline])
+    end
+
+    def end_inline
+      inline = []
+      while (value = @stack.pop) != [:inline]
+        raise if value.nil?
+        inline.unshift(value)
+      end
+      push(Hash[*inline])
     end
 
     def end_array

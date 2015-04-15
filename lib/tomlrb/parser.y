@@ -9,23 +9,30 @@ rule
     : table
     | array_of_tables
     | assignment
-    | inline_table_assignment
+    | inline_table
     ;
   table
     : '[' identifier ']' { @handler.set_context(val[1]) }
     ;
-  inline_table_assignment
-    : inline_table_start inline_table_end
+  inline_table
+    : inline_table_start inline_continued
     ;
   inline_table_start
-    : identifier '=' '{' { @handler.set_context(val[0], is_inline_context: true) }
+    : '{' { @handler.start_inline }
     ;
-  inline_table_end
-    : inline_values '}'
+  inline_continued
+    : '}' { @handler.end_inline }
+    | inline_assignment_key inline_assignment_value inline_next
     ;
-  inline_values
-    : inline_values ',' assignment
-    | assignment
+  inline_next
+    : '}' { @handler.end_inline }
+    | ',' inline_continued
+    ;
+  inline_assignment_key
+    : identifier { @handler.push(val[0]) }
+    ;
+  inline_assignment_value
+    : '=' value
     ;
   assignment
     : identifier '=' value { @handler.assign(val[0]) }
@@ -53,6 +60,7 @@ rule
   value
     : scalar { @handler.push(val[0]) }
     | array
+    | inline_table
     ;
   scalar
     : string
