@@ -8,10 +8,10 @@ module Tomlrb
       @stack = []
     end
 
-    def set_context(name, is_array_of_tables: false)
+    def set_context(identifiers, is_array_of_tables: false)
       @current = @output
 
-      deal_with_array_of_table(name, is_array_of_tables) do |identifiers|
+      deal_with_array_of_table(identifiers, is_array_of_tables) do |identifiers|
         identifiers.each do |k|
           if @current[k].is_a?(Array)
             @current[k] << {} if @current[k].empty?
@@ -24,8 +24,8 @@ module Tomlrb
       end
     end
 
-    def deal_with_array_of_table(name, is_array_of_tables)
-      identifiers = name.split('.')
+    def deal_with_array_of_table(identifiers, is_array_of_tables)
+      identifiers.map!{|n| n.gsub("\"", '')}
       last_identifier = identifiers.pop if is_array_of_tables
 
       yield(identifiers)
@@ -45,30 +45,17 @@ module Tomlrb
       @stack << o
     end
 
-    def start_array
-      push([:array])
+    def start_(type)
+      push([type])
     end
 
-    def start_inline
-      push([:inline])
-    end
-
-    def end_inline
-      inline = []
-      while (value = @stack.pop) != [:inline]
-        raise if value.nil?
-        inline.unshift(value)
-      end
-      push(Hash[*inline])
-    end
-
-    def end_array
+    def end_(type)
       array = []
-      while (value = @stack.pop) != [:array]
+      while (value = @stack.pop) != [type]
         raise if value.nil?
         array.unshift(value)
       end
-      push(array)
+      array
     end
   end
 end

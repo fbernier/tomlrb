@@ -7,25 +7,42 @@ rule
     ;
   expression
     : table
-    | array_of_tables
     | assignment
     | inline_table
     ;
   table
-    : '[' identifier ']' { @handler.set_context(val[1]) }
+    : table_start table_continued
+    ;
+  table_start
+    : '[' '[' { @handler.start_(:array_of_tables) }
+    | '[' { @handler.start_(:table) }
+    ;
+  table_continued
+    : ']' ']' { array = @handler.end_(:array_of_tables); @handler.set_context(array, is_array_of_tables: true) }
+    | ']' { array = @handler.end_(:table); @handler.set_context(array) }
+    | table_identifier table_next
+    ;
+  table_next
+    : ']' ']' { array = @handler.end_(:array_of_tables); @handler.set_context(array, is_array_of_tables: true) }
+    | ']' { array = @handler.end_(:table); @handler.set_context(array) }
+    | '.' table_continued
+    ;
+  table_identifier
+    : identifier { @handler.push(val[0]) }
+    | string { @handler.push(val[0]) }
     ;
   inline_table
     : inline_table_start inline_continued
     ;
   inline_table_start
-    : '{' { @handler.start_inline }
+    : '{' { @handler.start_(:inline) }
     ;
   inline_continued
-    : '}' { @handler.end_inline }
+    : '}' { array = @handler.end_(:inline); @handler.push(Hash[*array]) }
     | inline_assignment_key inline_assignment_value inline_next
     ;
   inline_next
-    : '}' { @handler.end_inline }
+    : '}' { array = @handler.end_(:inline); @handler.push(Hash[*array]) }
     | ',' inline_continued
     ;
   inline_assignment_key
@@ -41,21 +58,18 @@ rule
     : start_array array_continued
     ;
   array_continued
-    : ']' { @handler.end_array }
+    : ']' { array = @handler.end_(:array); @handler.push(array) }
     | value array_next
     ;
   array_next
-    : ']' { @handler.end_array }
+    : ']' { array = @handler.end_(:array); @handler.push(array) }
     | ',' array_continued
     ;
   start_array
-    : '[' { @handler.start_array }
+    : '[' { @handler.start_(:array) }
     ;
   end_array
     : ']'
-    ;
-  array_of_tables
-    : '[' '[' identifier ']' ']' { @handler.set_context(val[2], is_array_of_tables: true) }
     ;
   value
     : scalar { @handler.push(val[0]) }
