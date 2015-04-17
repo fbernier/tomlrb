@@ -10,7 +10,6 @@ A Racc based [TOML](https://github.com/toml-lang/toml) parser supporting the 0.4
 * Error handling
 * Better tests
 * Dumper
-* Symbolize keys
 * Refactoring
 
 ## Installation
@@ -38,7 +37,7 @@ Tomlrb.parse("[toml]\na = [\"array\", 123]")
 or
 
 ```ruby
-Tomlrb.load_file('my_file')
+Tomlrb.load_file('my_file', symbolize_keys: true)
 ```
 
 ## Development

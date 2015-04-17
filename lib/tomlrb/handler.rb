@@ -2,10 +2,11 @@ module Tomlrb
   class Handler
     attr_reader :output
 
-    def initialize
+    def initialize(**options)
       @output = {}
       @current = @output
       @stack = []
+      @symbolize_keys = options[:symbolize_keys]
     end
 
     def set_context(identifierz, is_array_of_tables: false)
@@ -13,6 +14,7 @@ module Tomlrb
 
       deal_with_array_of_table(identifierz, is_array_of_tables) do |identifiers|
         identifiers.each do |k|
+          k = k.to_sym if @symbolize_keys
           if @current[k].is_a?(Array)
             @current[k] << {} if @current[k].empty?
             @current = @current[k].last
@@ -31,6 +33,7 @@ module Tomlrb
       yield(identifiers)
 
       if is_array_of_tables
+        last_identifier = last_identifier.to_sym if @symbolize_keys
         @current[last_identifier] ||= []
         @current[last_identifier] << {}
         @current = @current[last_identifier].last
@@ -38,6 +41,7 @@ module Tomlrb
     end
 
     def assign(k)
+      k = k.to_sym if @symbolize_keys
       @current[k] = @stack.pop
     end
 
