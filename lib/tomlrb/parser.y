@@ -69,9 +69,6 @@ rule
   start_array
     : '[' { @handler.start_(:array) }
     ;
-  end_array
-    : ']'
-    ;
   value
     : scalar { @handler.push(val[0]) }
     | array
