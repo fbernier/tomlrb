@@ -1,6 +1,6 @@
 # Tomlrb
 
-[![Code Climate](https://codeclimate.com/github/fbernier/tomlrb/badges/gpa.svg)](https://codeclimate.com/github/fbernier/tomlrb)
+[![Code Climate](https://codeclimate.com/github/fbernier/tomlrb/badges/gpa.svg)](https://codeclimate.com/github/fbernier/tomlrb) [![Build Status](https://travis-ci.org/fbernier/tomlrb.svg)](https://travis-ci.org/fbernier/tomlrb)
 
 A racc based [toml](https://github.com/toml-lang/toml) parser.
 
