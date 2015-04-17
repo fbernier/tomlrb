@@ -1,5 +1,6 @@
 require 'time'
 require "tomlrb/version"
+require 'tomlrb/string_utils'
 require "tomlrb/scanner"
 require "tomlrb/parser"
 require "tomlrb/handler"

@@ -16,18 +16,4 @@ class Tomlrb::Parser < Tomlrb::GeneratedParser
     do_parse
     @handler
   end
-
-  def self.unescape_chars(str)
-    str
-      .gsub(/\\0/, "\0")
-      .gsub(/\\t/, "\t")
-      .gsub(/\\n/, "\n")
-      .gsub(/\\\"/, '"')
-      .gsub(/\\r/, "\r")
-      .gsub(/\\\\/, '\\')
-  end
-
-  def self.strip_spaces(str)
-    str.gsub(/\\\r?\n[\n\t\r ]*/, '')
-  end
 end

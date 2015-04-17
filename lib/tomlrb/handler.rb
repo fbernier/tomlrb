@@ -8,10 +8,10 @@ module Tomlrb
       @stack = []
     end
 
-    def set_context(identifiers, is_array_of_tables: false)
+    def set_context(identifierz, is_array_of_tables: false)
       @current = @output
 
-      deal_with_array_of_table(identifiers, is_array_of_tables) do |identifiers|
+      deal_with_array_of_table(identifierz, is_array_of_tables) do |identifiers|
         identifiers.each do |k|
           if @current[k].is_a?(Array)
             @current[k] << {} if @current[k].empty?

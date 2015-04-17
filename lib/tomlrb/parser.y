@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_SINGLE LITERAL_MULTI LITERAL_SINGLE DATETIME INTEGER FLOAT TRUE FALSE
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME INTEGER FLOAT TRUE FALSE
 rule
   expressions
     : expressions expression
@@ -28,8 +28,8 @@ rule
     | '.' table_continued
     ;
   table_identifier
-    : identifier { @handler.push(val[0]) }
-    | string { @handler.push(val[0]) }
+    : IDENTIFIER { @handler.push(val[0]) }
+    | STRING_BASIC { @handler.push(val[0]) }
     ;
   inline_table
     : inline_table_start inline_continued
@@ -46,13 +46,14 @@ rule
     | ',' inline_continued
     ;
   inline_assignment_key
-    : identifier { @handler.push(val[0]) }
+    : IDENTIFIER { @handler.push(val[0]) }
     ;
   inline_assignment_value
     : '=' value
     ;
   assignment
-    : identifier '=' value { @handler.assign(val[0]) }
+    : IDENTIFIER '=' value { @handler.assign(val[0]) }
+    | STRING_BASIC '=' value { @handler.assign(val[0]) }
     ;
   array
     : start_array array_continued
@@ -88,11 +89,8 @@ rule
     | DATETIME { result = Time.parse(val[0]) }
     ;
   string
-    : STRING_MULTI { result = self.class.unescape_chars(val[0]) }
-    | STRING_SINGLE { result = self.class.unescape_chars(val[0]) }
-    | LITERAL_MULTI { result = self.class.unescape_chars(self.class.strip_spaces(val[0])) }
-    | LITERAL_SINGLE { result = self.class.strip_spaces(val[0]) }
-    ;
-  identifier:
-    : IDENTIFIER
+    : STRING_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0])) }
+    | STRING_BASIC { result = StringUtils.replace_escaped_chars(val[0]) }
+    | STRING_LITERAL_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.strip_spaces(val[0])) }
+    | STRING_LITERAL { result = StringUtils.strip_spaces(val[0]) }
     ;

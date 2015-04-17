@@ -1,11 +1,9 @@
 # Tomlrb
 
-A racc based [toml](https://github.com/toml-lang/toml) parser. It's still a work in progress so it doesn't support the full spec yet.
-
+A racc based [toml](https://github.com/toml-lang/toml) parser.
 
 ## TODO
 
-* Extended string support
 * Tests
 
 ## Installation
