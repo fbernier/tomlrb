@@ -1,4 +1,5 @@
 require 'time'
+require 'stringio'
 require "tomlrb/version"
 require 'tomlrb/string_utils'
 require "tomlrb/scanner"
