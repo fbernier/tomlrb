@@ -1,10 +1,13 @@
 # Tomlrb
 
+[![Code Climate](https://codeclimate.com/github/fbernier/tomlrb/badges/gpa.svg)](https://codeclimate.com/github/fbernier/tomlrb)
+
 A racc based [toml](https://github.com/toml-lang/toml) parser.
 
 ## TODO
 
-* Tests
+* Better tests
+* Dumper
 
 ## Installation
 
@@ -26,6 +29,12 @@ Or install it yourself as:
 
 ```ruby
 Tomlrb.parse("[toml]\na = [\"array\", 123]")
+```
+
+or
+
+```ruby
+Tomlrb.load_file('my_file')
 ```
 
 ## Development
