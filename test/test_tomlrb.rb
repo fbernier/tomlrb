@@ -8,8 +8,8 @@ describe Tomlrb::Parser do
 
   it "parses a toml v0.4.0 file" do
     parsed_file = Tomlrb.load_file('./test/example-v0.4.0.toml')
-    # FIXME this fails but minitest cannot find a difference in the Hash#inspect output...
-    #parsed_file.must_equal TomlExamples.example_v_0_4_0
+    skip('FIXME this fails but minitest cannot find a difference in the Hash#inspect output...')
+    parsed_file.must_equal TomlExamples.example_v_0_4_0
   end
 
   it "parses a toml hard file" do

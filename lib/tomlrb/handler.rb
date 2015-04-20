@@ -9,11 +9,11 @@ module Tomlrb
       @symbolize_keys = options[:symbolize_keys]
     end
 
-    def set_context(identifierz, is_array_of_tables: false)
+    def set_context(identifiers, is_array_of_tables: false)
       @current = @output
 
-      deal_with_array_of_table(identifierz, is_array_of_tables) do |identifiers|
-        identifiers.each do |k|
+      deal_with_array_of_tables(identifiers, is_array_of_tables) do |identifierz|
+        identifierz.each do |k|
           k = k.to_sym if @symbolize_keys
           if @current[k].is_a?(Array)
             @current[k] << {} if @current[k].empty?
@@ -26,7 +26,7 @@ module Tomlrb
       end
     end
 
-    def deal_with_array_of_table(identifiers, is_array_of_tables)
+    def deal_with_array_of_tables(identifiers, is_array_of_tables)
       identifiers.map!{|n| n.gsub("\"", '')}
       last_identifier = identifiers.pop if is_array_of_tables
 

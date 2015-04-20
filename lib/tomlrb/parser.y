@@ -2,8 +2,7 @@ class Tomlrb::GeneratedParser
 token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME INTEGER FLOAT TRUE FALSE
 rule
   expressions
-    : expressions expression
-    | expression
+    | expressions expression
     ;
   expression
     : table

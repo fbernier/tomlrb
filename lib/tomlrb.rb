@@ -7,6 +7,7 @@ require "tomlrb/parser"
 require "tomlrb/handler"
 
 module Tomlrb
+
   def self.parse(string_or_io, **options)
     io = string_or_io.is_a?(String) ? StringIO.new(string_or_io) : string_or_io
     scanner = Scanner.new(io)
