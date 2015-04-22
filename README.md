@@ -7,10 +7,9 @@ A Racc based [TOML](https://github.com/toml-lang/toml) parser supporting the 0.4
 
 ## TODO
 
-* Error handling
+* YARD documentation
 * Better tests
 * Dumper
-* Refactoring
 
 ## Installation
 

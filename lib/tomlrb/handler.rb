@@ -6,6 +6,7 @@ module Tomlrb
       @output = {}
       @current = @output
       @stack = []
+      @array_names = []
       @symbolize_keys = options[:symbolize_keys]
     end
 
@@ -28,7 +29,14 @@ module Tomlrb
 
     def deal_with_array_of_tables(identifiers, is_array_of_tables)
       identifiers.map!{|n| n.gsub("\"", '')}
-      last_identifier = identifiers.pop if is_array_of_tables
+      stringified_identifier = identifiers.join('.')
+
+      if is_array_of_tables
+        @array_names << stringified_identifier
+        last_identifier = identifiers.pop
+      elsif @array_names.include?(stringified_identifier)
+        raise ParseError.new('Cannot define a normal table with the same name as an already established array')
+      end
 
       yield(identifiers)
 
@@ -56,7 +64,6 @@ module Tomlrb
     def end_(type)
       array = []
       while (value = @stack.pop) != [type]
-        raise if value.nil?
         array.unshift(value)
       end
       array

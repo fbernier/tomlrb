@@ -16,6 +16,10 @@ describe Tomlrb::Parser do
     parsed_file = Tomlrb.load_file('./test/hard_example.toml')
     parsed_file.must_equal TomlExamples.hard_example
   end
+
+  it "raises an error when defining a table with the same name as an already established array" do
+    proc { Tomlrb.load_file('./test/error.toml') }.must_raise(Tomlrb::ParseError)
+  end
 end
 
 class TomlExamples
