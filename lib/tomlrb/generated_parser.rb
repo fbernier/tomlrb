@@ -416,7 +416,7 @@ module_eval(<<'.,.,', 'parser.y', 83)
 
 module_eval(<<'.,.,', 'parser.y', 84)
   def _reduce_43(val, _values, result)
-     result = Time.parse(val[0]) 
+     result = Time.new(*val[0])
     result
   end
 .,.,

@@ -82,7 +82,7 @@ rule
     | INTEGER { result = val[0].to_i }
     | TRUE   { result = true }
     | FALSE  { result = false }
-    | DATETIME { result = Time.parse(val[0]) }
+    | DATETIME { result = Time.new(*val[0])}
     ;
   string
     : STRING_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0])) }
