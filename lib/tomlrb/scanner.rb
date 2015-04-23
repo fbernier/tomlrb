@@ -2,7 +2,7 @@ require 'strscan'
 
 module Tomlrb
   class Scanner
-    COMMENT = /#.+/
+    COMMENT = /#.*/
     IDENTIFIER = /[A-Za-z0-9_-]+/
     SPACE = /[ \t\r\n]/
     STRING_BASIC = /(["])(?:\\?.)*?\1/
