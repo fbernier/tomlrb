@@ -39,6 +39,26 @@ or
 Tomlrb.load_file('my_file', symbolize_keys: true)
 ```
 
+## Benchmark
+
+You can run the benchmark against the only other v0.4.0 compliant parser to my knowledge with `ruby benchmarks/bench.rb`.
+
+Here are the results on my machine:
+
+```
+Calculating -------------------------------------
+      emancu/toml-rb     1.000  i/100ms
+     fbernier/tomlrb    46.000  i/100ms
+-------------------------------------------------
+      emancu/toml-rb     13.657  (± 7.3%) i/s -     69.000
+     fbernier/tomlrb    486.095  (± 3.5%) i/s -      2.438k
+
+Comparison:
+     fbernier/tomlrb:      486.1 i/s
+      emancu/toml-rb:       13.7 i/s - 35.59x slower
+
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
