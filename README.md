@@ -7,7 +7,6 @@ A Racc based [TOML](https://github.com/toml-lang/toml) Ruby parser supporting th
 
 ## TODO
 
-* YARD documentation
 * Better tests
 * Dumper
 
@@ -77,6 +76,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-### Thanks
+## Thanks
 
 Thanks to [@jpbougie](https://github.com/jpbougie) for the crash course on  the Chomsky hierarchy and general tips.
