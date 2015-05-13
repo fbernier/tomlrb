@@ -16,6 +16,8 @@ module Tomlrb
       deal_with_array_of_tables(identifiers, is_array_of_tables) do |identifierz|
         identifierz.each do |k|
           k = k.to_sym if @symbolize_keys
+          raise ParseError.new("Cannot override an existing table: [#{k}]") if @current[k]
+
           if @current[k].is_a?(Array)
             @current[k] << {} if @current[k].empty?
             @current = @current[k].last
@@ -35,7 +37,7 @@ module Tomlrb
         @array_names << stringified_identifier
         last_identifier = identifiers.pop
       elsif @array_names.include?(stringified_identifier)
-        raise ParseError.new('Cannot define a normal table with the same name as an already established array')
+        raise ParseError.new("Cannot define a normal table with the same name as an already established array: [#{stringified_identifier}]")
       end
 
       yield(identifiers)
@@ -50,6 +52,7 @@ module Tomlrb
 
     def assign(k)
       k = k.to_sym if @symbolize_keys
+      raise ParseError.new("Cannot override an existing key: #{k}") if @current[k]
       @current[k] = @stack.pop
     end
 
