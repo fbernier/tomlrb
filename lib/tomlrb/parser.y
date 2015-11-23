@@ -53,6 +53,7 @@ rule
   assignment
     : IDENTIFIER '=' value { @handler.assign(val[0]) }
     | STRING_BASIC '=' value { @handler.assign(val[0]) }
+    | INTEGER '=' value { @handler.assign(val[0]) }
     ;
   array
     : start_array array_continued
