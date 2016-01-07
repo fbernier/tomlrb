@@ -42,7 +42,11 @@ rule
     | inline_assignment_key inline_assignment_value inline_next
     ;
   inline_next
-    : '}' { array = @handler.end_(:inline); @handler.push(Hash[*array]) }
+    : '}' {
+      array = @handler.end_(:inline)
+      array = array.each_slice(2).map{ |k,v| {k.to_sym => v} } if @handler.symbolize_keys
+      @handler.push(Hash[*array])
+    }
     | ',' inline_continued
     ;
   inline_assignment_key
