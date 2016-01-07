@@ -1,6 +1,6 @@
 module Tomlrb
   class Handler
-    attr_reader :output
+    attr_reader :output, :symbolize_keys
 
     def initialize(**options)
       @output = {}
