@@ -9,9 +9,7 @@ module Tomlrb
     STRING_MULTI = /"{3}([\s\S]*?"{3,4})/m
     STRING_LITERAL = /(['])(?:\\?.)*?\1/
     STRING_LITERAL_MULTI = /'{3}([\s\S]*?'{3})/m
-    DATETIME_OFFSET = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)?(z|[-+]\d{2}:\d{2})/i
-    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/i
-    DATE = /(-?\d{4})-(\d{2})-(\d{2})/
+    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
     FLOAT = /[+-]?(?:[0-9_]+\.[0-9_]*|\.[0-9_]+|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?/
     INTEGER = /[+-]?\d(_?\d)*/
     TRUE   = /true/
@@ -27,9 +25,7 @@ module Tomlrb
       case
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
-      when @ss.scan(DATETIME_OFFSET) then process_datetime_offset
       when @ss.scan(DATETIME) then process_datetime
-      when @ss.scan(DATE) then process_date
       when text = @ss.scan(STRING_MULTI) then [:STRING_MULTI, text[3..-4]]
       when text = @ss.scan(STRING_BASIC) then [:STRING_BASIC, text[1..-2]]
       when text = @ss.scan(STRING_LITERAL_MULTI) then [:STRING_LITERAL_MULTI, text[3..-4]]
@@ -45,18 +41,13 @@ module Tomlrb
       end
     end
 
-    def process_datetime_offset
-      args = [ @ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6].to_f, @ss[7].gsub('Z', '+00:00') ]
-      [:DATETIME, args]
-    end
-
     def process_datetime
-      args = [ @ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6].to_f, Time.now.utc_offset ]
-      [:DATETIME, args]
-    end
-
-    def process_date
-      args = [ @ss[1], @ss[2], @ss[3], 0, 0, 0.0, Time.now.utc_offset ]
+      if @ss[7].nil?
+        offset = Time.now.utc_offset
+      else
+        offset = @ss[7].gsub('Z', '+00:00')
+      end
+      args = [ @ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f, offset ]
       [:DATETIME, args]
     end
   end
