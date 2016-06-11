@@ -10,6 +10,7 @@ module Tomlrb
     STRING_LITERAL = /(['])(?:\\?.)*?\1/
     STRING_LITERAL_MULTI = /'{3}([\s\S]*?'{3})/m
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)?(z|[-+]\d{2}:\d{2})/i
+    DATE = /(-?\d{4})-(\d{2})-(\d{2})/
     FLOAT = /[+-]?(?:[0-9_]+\.[0-9_]*|\.[0-9_]+|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?/
     INTEGER = /[+-]?\d(_?\d)*/
     TRUE   = /true/
@@ -26,6 +27,7 @@ module Tomlrb
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime
+      when @ss.scan(DATE) then process_date
       when text = @ss.scan(STRING_MULTI) then [:STRING_MULTI, text[3..-4]]
       when text = @ss.scan(STRING_BASIC) then [:STRING_BASIC, text[1..-2]]
       when text = @ss.scan(STRING_LITERAL_MULTI) then [:STRING_LITERAL_MULTI, text[3..-4]]
@@ -43,6 +45,11 @@ module Tomlrb
 
     def process_datetime
       args = [ @ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6].to_f, @ss[7].gsub('Z', '+00:00') ]
+      [:DATETIME, args]
+    end
+
+    def process_date
+      args = [ @ss[1], @ss[2], @ss[3], 0, 0, 0.0, Time.now.utc_offset ]
       [:DATETIME, args]
     end
   end
