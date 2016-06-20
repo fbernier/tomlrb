@@ -9,7 +9,7 @@ module Tomlrb
     STRING_MULTI = /"{3}([\s\S]*?"{3,4})/m
     STRING_LITERAL = /(['])(?:\\?.)*?\1/
     STRING_LITERAL_MULTI = /'{3}([\s\S]*?'{3})/m
-    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)?(z|[-+]\d{2}:\d{2})/i
+    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
     FLOAT = /[+-]?(?:[0-9_]+\.[0-9_]*|\.[0-9_]+|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?/
     INTEGER = /[+-]?\d(_?\d)*/
     TRUE   = /true/
@@ -42,7 +42,12 @@ module Tomlrb
     end
 
     def process_datetime
-      args = [ @ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6].to_f, @ss[7].gsub('Z', '+00:00') ]
+      if @ss[7].nil?
+        offset = Time.now.utc_offset
+      else
+        offset = @ss[7].gsub('Z', '+00:00')
+      end
+      args = [ @ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f, offset ]
       [:DATETIME, args]
     end
   end
