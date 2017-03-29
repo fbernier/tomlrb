@@ -61,6 +61,7 @@ rule
   assignment
     : IDENTIFIER '=' value { @handler.assign(val[0]) }
     | STRING_BASIC '=' value { @handler.assign(val[0]) }
+    | STRING_LITERAL '=' value { @handler.assign(val[0]) }
     | INTEGER '=' value { @handler.assign(val[0]) }
     | TRUE '=' value { @handler.assign(val[0]) }
     | FALSE '=' value { @handler.assign(val[0]) }
