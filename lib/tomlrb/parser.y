@@ -29,6 +29,7 @@ rule
   table_identifier
     : IDENTIFIER { @handler.push(val[0]) }
     | STRING_BASIC { @handler.push(val[0]) }
+    | STRING_LITERAL { @handler.push(val[0]) }
     | INTEGER { @handler.push(val[0]) }
     | TRUE { @handler.push(val[0]) }
     | FALSE { @handler.push(val[0]) }
