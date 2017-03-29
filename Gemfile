@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
 group :development do
-  gem "bundler", "~> 1.9"
-  gem "rake", "~> 10.0"
+  gem "bundler"
+  gem "rake"
   gem "pry"
   gem "pry-byebug"
   gem "racc"
