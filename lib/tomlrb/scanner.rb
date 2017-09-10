@@ -11,7 +11,7 @@ module Tomlrb
     STRING_LITERAL_MULTI = /'{3}([\s\S]*?'{3})/m
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
     FLOAT = /[+-]?(?:[0-9_]+\.[0-9_]*|\.[0-9_]+|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?/
-    INTEGER = /[+-]?\d(_?\d)*/
+    INTEGER = /[+-]?\d(_?\d)*(?![A-Za-z0-9_-]+)/
     TRUE   = /true/
     FALSE  = /false/
 
