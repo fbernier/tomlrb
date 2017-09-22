@@ -45,17 +45,16 @@ You can run the benchmark against the only other v0.4.0 compliant parser to my k
 Here are the results on my machine:
 
 ```
-Calculating -------------------------------------
+Warming up --------------------------------------
       emancu/toml-rb     1.000  i/100ms
-     fbernier/tomlrb    46.000  i/100ms
--------------------------------------------------
-      emancu/toml-rb     13.657  (± 7.3%) i/s -     69.000
-     fbernier/tomlrb    486.095  (± 3.5%) i/s -      2.438k
+     fbernier/tomlrb    65.000  i/100ms
+Calculating -------------------------------------
+      emancu/toml-rb     19.199  (± 5.2%) i/s -     96.000  in   5.034377s
+     fbernier/tomlrb    653.650  (± 4.0%) i/s -      3.315k in   5.081117s
 
 Comparison:
-     fbernier/tomlrb:      486.1 i/s
-      emancu/toml-rb:       13.7 i/s - 35.59x slower
-
+     fbernier/tomlrb:      653.6 i/s
+      emancu/toml-rb:       19.2 i/s - 34.05x  slower
 ```
 
 ## Development
