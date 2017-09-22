@@ -35,6 +35,10 @@ module Tomlrb
   # @option options [Boolean] :symbolize_keys (false) whether to return the keys as symbols or strings
   # @return [Hash] the Ruby data structure represented by the input
   def self.load_file(path, **options)
-    Tomlrb.parse(File.read(path), options)
+    # By default Ruby sets the external encoding of an IO object to the
+    # default external encoding. The default external encoding is set by
+    # locale encoding or the interpreter -E option.
+    tmp = File.read(path, :encoding=>'utf-8')
+    Tomlrb.parse(tmp, options)
   end
 end

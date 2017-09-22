@@ -60,8 +60,9 @@ class TomlExamples
   end
 
   def self.example
-    {"title"=>"TOML Example",
-     "owner"=>{"name"=>"Tom Preston-Werner", "organization"=>"GitHub", "bio"=>"GitHub Cofounder & CEO\nLikes tater tots and beer.", "dob"=>Time.parse('1979-05-27 07:32:00 UTC')},
+    { "1a" => "Bar key starting with number",
+      "title"=>"TOML Example",
+     "owner"=>{"name"=>"Tom Preston-Werner", "organization"=>"GitHub", "bio"=>"GitHub Cofounder & CEO\nLikes tater tots and beer.", "1-a" => "Another bar key starting with number", "dob"=>Time.parse('1979-05-27 07:32:00 +0000')},
      "database"=>{"server"=>"192.168.1.1", "ports"=>[8001, 8001, 8002], "connection_max"=>5000, "enabled"=>true},
      "servers"=>{"alpha"=>{"ip"=>"10.0.0.1", "dc"=>"eqdc10"}, "beta"=>{"ip"=>"10.0.0.2", "dc"=>"eqdc10", "country"=>"中国"}},
      "clients"=>{"data"=>[["gamma", "delta"], [1, 2]], "hosts"=>["alpha", "omega"]},
