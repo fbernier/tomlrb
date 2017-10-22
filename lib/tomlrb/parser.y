@@ -99,6 +99,6 @@ rule
   string
     : STRING_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0])) }
     | STRING_BASIC { result = StringUtils.replace_escaped_chars(val[0]) }
-    | STRING_LITERAL_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.strip_spaces(val[0])) }
-    | STRING_LITERAL { result = StringUtils.strip_spaces(val[0]) }
+    | STRING_LITERAL_MULTI { result = StringUtils.strip_spaces(val[0]) }
+    | STRING_LITERAL { result = val[0] }
     ;
