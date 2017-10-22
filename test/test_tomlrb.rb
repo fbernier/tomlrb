@@ -23,6 +23,10 @@ describe Tomlrb::Parser do
   it "raises an error when defining a table with the same name as an already established array" do
     proc { Tomlrb.load_file('./test/error.toml') }.must_raise(Tomlrb::ParseError)
   end
+
+  it "raises an error when parsing an unclosed table" do
+    proc { Tomlrb.parse('''[[missingbracket]\na = 1''') }.must_raise(Tomlrb::ParseError)
+  end
 end
 
 class TomlExamples

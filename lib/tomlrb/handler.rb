@@ -35,7 +35,7 @@ module Tomlrb
         @array_names << stringified_identifier
         last_identifier = identifiers.pop
       elsif @array_names.include?(stringified_identifier)
-        raise ParseError.new('Cannot define a normal table with the same name as an already established array')
+        raise ParseError, 'Cannot define a normal table with the same name as an already established array'
       end
 
       yield(identifiers)
@@ -64,6 +64,7 @@ module Tomlrb
     def end_(type)
       array = []
       while (value = @stack.pop) != [type]
+        raise ParseError, 'Unclosed table' unless value
         array.unshift(value)
       end
       array

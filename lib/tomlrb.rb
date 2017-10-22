@@ -22,7 +22,7 @@ module Tomlrb
     begin
       handler = parser.parse
     rescue Racc::ParseError => e
-      raise ParseError.new(e.message)
+      raise ParseError, e.message
     end
 
     handler.output
