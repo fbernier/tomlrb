@@ -3,8 +3,7 @@ source 'https://rubygems.org'
 group :development do
   gem "bundler"
   gem "rake"
-  gem "pry"
-  gem "pry-byebug"
+  gem "byebug"
   gem "racc"
   gem "minitest"
   gem "minitest-reporters"
