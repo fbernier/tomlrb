@@ -522,14 +522,14 @@ module_eval(<<'.,.,', 'parser.y', 100)
 
 module_eval(<<'.,.,', 'parser.y', 101)
   def _reduce_54(val, _values, result)
-     result = StringUtils.replace_escaped_chars(StringUtils.strip_spaces(val[0])) 
+     result = StringUtils.strip_spaces(val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 102)
   def _reduce_55(val, _values, result)
-     result = StringUtils.strip_spaces(val[0]) 
+     result = val[0] 
     result
   end
 .,.,

@@ -34,7 +34,7 @@ class TomlExamples
     {"table"=>{"key"=>"value", "subtable"=>{"key"=>"another value"}, "inline"=>{"name"=>{"first"=>"Tom", "last"=>"Preston-Werner"}, "point"=>{"x"=>1, "y"=>2}}},
      "x"=>{"y"=>{"z"=>{"w"=>{}}}},
      "string"=>
-    {"basic"=>{"basic"=>"I'm a string. \"You can quote me\". Name\tJos\\u00E9\nLocation\tSF."},
+    {"basic"=>{"basic"=>"I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."},
      "multiline"=>
     {"key1"=>"One\nTwo",
      "key2"=>"One\nTwo",
