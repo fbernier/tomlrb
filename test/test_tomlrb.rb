@@ -56,7 +56,7 @@ class TomlExamples
      "both"=>{"key"=>6.626e-34},
      "underscores"=>{"key1"=>9224617.445991227, "key2"=>1e1_000}},
     "boolean"=>{"True"=>true, "False"=>false},
-    "datetime"=>{"key1"=>Time.utc(1979, 05, 27, 07, 32, 0), "key2"=>Time.new(1979, 05, 27, 00, 32, 0, '-07:00'), "key3"=>Time.new(1979, 05, 27, 00, 32, 0.999999, '-07:00'), "key4"=>Time.new(1979, 05, 27, 0, 32, 0), "key5"=>Time.new(1979, 05, 27, 0, 0, 0)}, "array"=>{"key1"=>[1, 2, 3], "key2"=>["red", "yellow", "green"], "key3"=>[[1, 2], [3, 4, 5]], "key4"=>[[1, 2], ["a", "b", "c"]], "key5"=>[1, 2, 3], "key6"=>[1, 2]},
+    "datetime"=>{"key1"=>Time.new(1979, 05, 27, 07, 32, 0, '+00:00'), "key2"=>Time.new(1979, 05, 27, 00, 32, 0, '-07:00'), "key3"=>Time.new(1979, 05, 27, 00, 32, 0.999999, '-07:00'), "key4"=>Time.new(1979, 05, 27, 0, 32, 0, '+01:00'), "key5"=>Time.new(1979, 05, 27, 0, 0, 0, '+01:00')}, "array"=>{"key1"=>[1, 2, 3], "key2"=>["red", "yellow", "green"], "key3"=>[[1, 2], [3, 4, 5]], "key4"=>[[1, 2], ["a", "b", "c"]], "key5"=>[1, 2, 3], "key6"=>[1, 2]},
     "products"=>[{"name"=>"Hammer", "sku"=>738594937}, {}, {"name"=>"Nail", "sku"=>284758393, "color"=>"gray"}],
     "fruit"=>
     [{"name"=>"apple", "physical"=>{"color"=>"red", "shape"=>"round"}, "variety"=>[{"name"=>"red delicious"}, {"name"=>"granny smith"}]},
