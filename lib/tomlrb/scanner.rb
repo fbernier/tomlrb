@@ -10,11 +10,17 @@ module Tomlrb
     STRING_LITERAL = /(['])(?:\\?.)*?\1/
     STRING_LITERAL_MULTI = /'{3}([\s\S]*?'{3})/m
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
-    FLOAT = /[+-]?(?:[0-9_]+\.[0-9_]*|\.[0-9_]+|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?/
+    # FLOAT: 
+    # * No leading or trailing "_".
+    # * At least one digit before and after dot (if dot exists).
+    # * No leading 0, even in exponent. (TODO!)
+    # * Allow nested tables with almost (sorry...) pure digits as names, e.g. [1.2a];
+    #   Unfortunately, nested tables key [1.2] still not works.
+    FLOAT = /[+-]?(?:\d[0-9_]*\.\d(?:[0-9_]*\d)?|\d+(?=[eE]))(?:[eE][+-]?\d(?:[0-9_]*\d)?)?(?=[\]\}= \t,]|$)/
     INTEGER = /[+-]?\d(_?\d)*(?![A-Za-z0-9_-]+)/
     TRUE   = /true/
     FALSE  = /false/
-
+                                                       
     def initialize(io)
       @ss = StringScanner.new(io.read)
     end

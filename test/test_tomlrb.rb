@@ -27,12 +27,36 @@ describe Tomlrb::Parser do
   it "raises an error when parsing an unclosed table" do
     proc { Tomlrb.parse('''[[missingbracket]\na = 1''') }.must_raise(Tomlrb::ParseError)
   end
+
+  it "raises an error when parsing a float with leading underscore" do
+    proc { Tomlrb.parse('x = _1.0') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float with trailing underscore" do
+    proc { Tomlrb.parse('x = 2.0_') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float without integer before dot" do
+    proc { Tomlrb.parse('x = .1') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float without integer behind dot" do
+    proc { Tomlrb.parse('x = 0.') }.must_raise(Tomlrb::ParseError)
+  end
+
+  # TODO
+  # it "raises an error when parsing a float with leading 0, even in exponent" do
+  #   proc { Tomlrb.parse('x = 01.2') }.must_raise(Tomlrb::ParseError)
+  # end
 end
 
 class TomlExamples
   def self.example_v_0_4_0
     {"table"=>{"key"=>"value", "subtable"=>{"key"=>"another value"}, "inline"=>{"name"=>{"first"=>"Tom", "last"=>"Preston-Werner"}, "point"=>{"x"=>1, "y"=>2}}},
      "x"=>{"y"=>{"z"=>{"w"=>{}}}},
+     "1"=>{"2a"=>{}},
+     "a"=>{"2"=>{}},
+     "2"=>{"b"=>{}},
      "string"=>
     {"basic"=>{"basic"=>"I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."},
      "multiline"=>
