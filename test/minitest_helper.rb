@@ -4,3 +4,4 @@ require 'tomlrb'
 require 'minitest/autorun'
 require "minitest/reporters"
 Minitest::Reporters.use!
+Minitest::Spec.make_my_diffs_pretty!

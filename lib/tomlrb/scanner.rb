@@ -43,11 +43,11 @@ module Tomlrb
 
     def process_datetime
       if @ss[7].nil?
-        offset = Time.now.utc_offset
+        offset = '+00:00'
       else
         offset = @ss[7].gsub('Z', '+00:00')
       end
-      args = [ @ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f, offset ]
+      args = [@ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f, offset]
       [:DATETIME, args]
     end
   end
