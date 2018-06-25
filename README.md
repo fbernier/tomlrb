@@ -47,14 +47,26 @@ Here are the results on my machine:
 ```
 Warming up --------------------------------------
       emancu/toml-rb     1.000  i/100ms
-     fbernier/tomlrb    65.000  i/100ms
+     fbernier/tomlrb    47.000  i/100ms
 Calculating -------------------------------------
-      emancu/toml-rb     19.199  (± 5.2%) i/s -     96.000  in   5.034377s
-     fbernier/tomlrb    653.650  (± 4.0%) i/s -      3.315k in   5.081117s
+      emancu/toml-rb     13.501  (± 7.4%) i/s -     68.000  in   5.050832s
+     fbernier/tomlrb    502.861  (± 3.6%) i/s -      2.538k in   5.053877s
+Comparison:
+     fbernier/tomlrb:      502.9 i/s
+      emancu/toml-rb:       13.5 i/s - 37.25x  slower
+
+# MEMORY
+Calculating -------------------------------------
+      emancu/toml-rb     2.733M memsize (    40.000  retained)
+                        35.718k objects (     1.000  retained)
+                        50.000  strings (     1.000  retained)
+     fbernier/tomlrb   115.778k memsize (    80.000  retained)
+                         2.422k objects (     2.000  retained)
+                        50.000  strings (     2.000  retained)
 
 Comparison:
-     fbernier/tomlrb:      653.6 i/s
-      emancu/toml-rb:       19.2 i/s - 34.05x  slower
+     fbernier/tomlrb:     115778 allocated
+      emancu/toml-rb:    2732978 allocated - 23.61x more
 ```
 
 ## Development

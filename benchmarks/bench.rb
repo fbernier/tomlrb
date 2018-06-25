@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'benchmark/ips'
 require_relative '../lib/tomlrb'
 begin
