@@ -1,3 +1,8 @@
+### 1.2.8 - 2018-12-18
+
+* Reduce gem size by excluding tests (tas50)
+* Make integer and float parsing closer to the spec (sgarciac)
+
 ### 1.2.7 - 2018-07-12
 
 * Datetime should be UTC when no offset or timezone are specified
