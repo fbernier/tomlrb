@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME INTEGER FLOAT TRUE FALSE
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE
 rule
   expressions
     | expressions expression
@@ -91,6 +91,8 @@ rule
     ;
   literal
     | FLOAT { result = val[0].to_f }
+    | FLOAT_INF { result = (val[0][0] == '-' ? -1 : 1) * Float::INFINITY }
+    | FLOAT_NAN { result = Float::NAN }
     | INTEGER { result = val[0].to_i }
     | TRUE   { result = true }
     | FALSE  { result = false }
