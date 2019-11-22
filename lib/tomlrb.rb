@@ -18,7 +18,7 @@ module Tomlrb
   def self.parse(string_or_io, **options)
     io = string_or_io.is_a?(String) ? StringIO.new(string_or_io) : string_or_io
     scanner = Scanner.new(io)
-    parser = Parser.new(scanner, options)
+    parser = Parser.new(scanner, **options)
     begin
       handler = parser.parse
     rescue Racc::ParseError => e
@@ -39,6 +39,6 @@ module Tomlrb
     # default external encoding. The default external encoding is set by
     # locale encoding or the interpreter -E option.
     tmp = File.read(path, :encoding=>'utf-8')
-    Tomlrb.parse(tmp, options)
+    Tomlrb.parse(tmp, **options)
   end
 end
