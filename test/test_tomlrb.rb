@@ -2,30 +2,30 @@ require 'minitest_helper'
 describe Tomlrb::Parser do
   it "parses a toml example file" do
     parsed_file = Tomlrb.load_file('./test/example.toml')
-    parsed_file.must_equal TomlExamples.example
+    _(parsed_file).must_equal TomlExamples.example
   end
 
   it "parses a toml v0.4.0 file" do
     parsed_file = Tomlrb.load_file('./test/example-v0.4.0.toml')
-    parsed_file.must_equal TomlExamples.example_v_0_4_0
+    _(parsed_file).must_equal TomlExamples.example_v_0_4_0
   end
 
   it "parses a toml hard file" do
     parsed_file = Tomlrb.load_file('./test/hard_example.toml')
-    parsed_file.must_equal TomlExamples.hard_example
+    _(parsed_file).must_equal TomlExamples.hard_example
   end
 
   it "parses a Cargo file" do
     parsed_file = Tomlrb.load_file('./test/Cargo.toml')
-    parsed_file.must_equal TomlExamples.cargo_example
+    _(parsed_file).must_equal TomlExamples.cargo_example
   end
 
   it "raises an error when defining a table with the same name as an already established array" do
-    proc { Tomlrb.load_file('./test/error.toml') }.must_raise(Tomlrb::ParseError)
+    _ { Tomlrb.load_file('./test/error.toml') }.must_raise(Tomlrb::ParseError)
   end
 
   it "raises an error when parsing an unclosed table" do
-    proc { Tomlrb.parse('''[[missingbracket]\na = 1''') }.must_raise(Tomlrb::ParseError)
+    _ { Tomlrb.parse('''[[missingbracket]\na = 1''') }.must_raise(Tomlrb::ParseError)
   end
 end
 
