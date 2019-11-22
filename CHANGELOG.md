@@ -1,3 +1,7 @@
+### 1.2.9 - 2019-11-22
+
+* Fixes and cleanups for ruby 2.7
+
 ### 1.2.8 - 2018-12-18
 
 * Reduce gem size by excluding tests (tas50)
