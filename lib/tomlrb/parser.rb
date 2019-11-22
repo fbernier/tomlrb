@@ -4,7 +4,7 @@ class Tomlrb::Parser < Tomlrb::GeneratedParser
 
   def initialize(tokenizer, **options)
     @tokenizer = tokenizer
-    @handler   = Tomlrb::Handler.new(options)
+    @handler   = Tomlrb::Handler.new(**options)
     super()
   end
 
