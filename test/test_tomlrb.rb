@@ -21,11 +21,16 @@ describe Tomlrb::Parser do
   end
 
   it "raises an error when defining a table with the same name as an already established array" do
-    _ { Tomlrb.load_file('./test/error.toml') }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.load_file('./test/error.toml') }.must_raise(Tomlrb::ParseError)
   end
 
   it "raises an error when parsing an unclosed table" do
-    _ { Tomlrb.parse('''[[missingbracket]\na = 1''') }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.parse('''[[missingbracket]\na = 1''') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "does not fail with a false table value (GitHub issue #23)" do
+    _( Tomlrb.parse("table=[ {name='name1', visible=true}, {name='name2', visible=false} ]") )
+      .must_equal({"table"=>[{"name"=>"name1", "visible"=>true}, {"name"=>"name2", "visible"=>false}]})
   end
 end
 

@@ -64,7 +64,7 @@ module Tomlrb
     def end_(type)
       array = []
       while (value = @stack.pop) != [type]
-        raise ParseError, 'Unclosed table' unless value
+        raise ParseError, 'Unclosed table' if value.nil?
         array.unshift(value)
       end
       array
