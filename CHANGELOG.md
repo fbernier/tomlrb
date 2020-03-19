@@ -1,3 +1,7 @@
+### 1.3.0 - 2020-03-19
+
+* Fix error with falsy table values
+
 ### 1.2.9 - 2019-11-22
 
 * Fixes and cleanups for ruby 2.7
