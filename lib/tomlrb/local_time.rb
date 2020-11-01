@@ -36,7 +36,7 @@ module Tomlrb
     end
 
     def ==(other)
-      to_time(0, 0, 0) == other.to_time(0, 0, 0)
+      @time == other.to_time(0, 1, 1)
     end
   end
 end
