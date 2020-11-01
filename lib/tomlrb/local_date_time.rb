@@ -39,7 +39,7 @@ module Tomlrb
     end
 
     # @param offset [String, Symbol, Numeric, nil] time zone offset.
-    #   * when +String+, must be '+HH:MM' format, '-HH:MM' format, 'UTC', 'A'..'I' or 'K'..'Z'.
+    #   * when +String+, must be '+HH:MM' format, '-HH:MM' format, 'UTC', 'A'..'I' or 'K'..'Z'. Arguments excluding '+-HH:MM' are supporeted at Ruby >= 2.7.0
     #   * when +Symbol+, must be +:dst+(for summar time for local) or +:std+(for standard time).
     #   * when +Numeric+, it is time zone offset in second.
     #   * when +nil+, local time zone offset is used.

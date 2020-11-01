@@ -23,9 +23,11 @@ describe Tomlrb::LocalDateTime do
       _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, '+09:00')
     end
 
-    it 'can change time zone by name' do
-      time = subject.to_time('UTC')
-      _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, 'UTC')
+    if RUBY_VERSION >= '2.7.0'
+      it 'can change time zone by name' do
+        time = subject.to_time('UTC')
+        _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, 'UTC')
+      end
     end
   end
 end
@@ -51,9 +53,11 @@ describe Tomlrb::LocalDate do
       _(time).must_equal Time.new(1979, 5, 27, 0, 0, 0, '+09:00')
     end
 
-    it 'can change time zone by name' do
-      time = subject.to_time('UTC')
-      _(time).must_equal Time.new(1979, 5, 27, 0, 0, 0, 'UTC')
+    if RUBY_VERSION >= '2.7.0'
+      it 'can change time zone by name' do
+        time = subject.to_time('UTC')
+        _(time).must_equal Time.new(1979, 5, 27, 0, 0, 0, 'UTC')
+      end
     end
   end
 end
@@ -79,9 +83,11 @@ describe Tomlrb::LocalTime do
       _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, '+09:00')
     end
 
-    it 'can change time zone with name' do
-      time = subject.to_time(1979, 5, 27, 'UTC')
-      _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, 'UTC')
+    if RUBY_VERSION >= '2.7.0'
+      it 'can change time zone with name' do
+        time = subject.to_time(1979, 5, 27, 'UTC')
+        _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, 'UTC')
+      end
     end
   end
 end
