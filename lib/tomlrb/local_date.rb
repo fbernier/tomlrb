@@ -25,5 +25,9 @@ module Tomlrb
     def to_s
       @time.strftime('%F')
     end
+
+    def ==(other)
+      to_time == other.to_time
+    end
   end
 end

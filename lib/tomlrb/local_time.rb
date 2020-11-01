@@ -34,5 +34,9 @@ module Tomlrb
       frac_str = frac == 0 ? '' : "#{frac.to_s[1..-1]}"
       @time.strftime("%T") << frac_str
     end
+
+    def ==(other)
+      to_time(0, 0, 0) == other.to_time(0, 0, 0)
+    end
   end
 end
