@@ -12,7 +12,13 @@ module Tomlrb
     }.freeze
 
     def self.multiline_replacements(str)
-      strip_spaces(str).gsub(/\\\n\s+/, '')
+      strip_spaces(str).gsub(/\\+\n\s+/) {|matched|
+        if matched.match(/\\+/)[0].length.odd?
+          matched.gsub(/\\\n\s+/, '')
+        else
+          matched
+        end
+      }
     end
 
     def self.replace_escaped_chars(str)
