@@ -59,7 +59,7 @@ def load_json(path)
       when 'integer'
         v.to_i
       when 'datetime-local'
-        date, time = v.split(/t /i)
+        date, time = v.split(/[t ]/i)
         year, month, day = date.split('-')
         hour, min, sec = time.split(':')
         Tomlrb::LocalDateTime.new(year, month, day, hour, min, sec.to_f)
