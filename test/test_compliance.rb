@@ -39,6 +39,15 @@ describe Tomlrb::Parser do
       _(actual).must_equal expected
     end
   end
+
+  Pathname.glob("#{tests_dir}/errors/*.toml").each do |toml_path|
+    toml_path = toml_path.expand_path
+    local_path = toml_path.parent.basename/toml_path.basename
+
+    it "raises an error on parsing #{local_path}" do
+      _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError
+    end
+  end
 end
 
 def load_json(path)
