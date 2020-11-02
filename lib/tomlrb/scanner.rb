@@ -6,7 +6,7 @@ module Tomlrb
     IDENTIFIER = /[A-Za-z0-9_-]+/
     SPACE = /[ \t\r\n]/
     STRING_BASIC = /(["])(?:\\?.)*?\1/
-    STRING_MULTI = /"{3}([\s\S]*?"{3,4})/m
+    STRING_MULTI = /"{3}([\s\S]*"{3,4})/m
     STRING_LITERAL = /(['])(?:\\?.)*?\1/
     STRING_LITERAL_MULTI = /'{3}([\s\S]*?'{3})/m
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})/i
