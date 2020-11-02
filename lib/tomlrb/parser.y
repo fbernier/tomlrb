@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE
 rule
   expressions
     | expressions expression
@@ -31,6 +31,9 @@ rule
     | STRING_BASIC { @handler.push(val[0]) }
     | STRING_LITERAL { @handler.push(val[0]) }
     | INTEGER { @handler.push(val[0]) }
+    | HEX_INTEGER { @handler.push(val[0]) }
+    | OCT_INTEGER { @handler.push(val[0]) }
+    | BIN_INTEGER { @handler.push(val[0]) }
     | TRUE { @handler.push(val[0]) }
     | FALSE { @handler.push(val[0]) }
     ;
@@ -63,6 +66,9 @@ rule
     | STRING_BASIC '=' value { @handler.assign(val[0]) }
     | STRING_LITERAL '=' value { @handler.assign(val[0]) }
     | INTEGER '=' value { @handler.assign(val[0]) }
+    | HEX_INTEGER '=' value { @handler.assign(val[0]) }
+    | OCT_INTEGER '=' value { @handler.assign(val[0]) }
+    | BIN_INTEGER '=' value { @handler.assign(val[0]) }
     | TRUE '=' value { @handler.assign(val[0]) }
     | FALSE '=' value { @handler.assign(val[0]) }
     ;
@@ -94,6 +100,9 @@ rule
     | FLOAT_INF { result = (val[0][0] == '-' ? -1 : 1) * Float::INFINITY }
     | FLOAT_NAN { result = Float::NAN }
     | INTEGER { result = val[0].to_i }
+    | HEX_INTEGER { result = val[0].to_i(16) }
+    | OCT_INTEGER { result = val[0].to_i(8) }
+    | BIN_INTEGER { result = val[0].to_i(2) }
     | TRUE   { result = true }
     | FALSE  { result = false }
     | DATETIME { result = Time.new(*val[0])}
