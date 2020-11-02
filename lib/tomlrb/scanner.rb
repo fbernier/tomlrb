@@ -17,6 +17,9 @@ module Tomlrb
     FLOAT_INF = /[+-]?inf/
     FLOAT_NAN = /[+-]?nan/
     INTEGER = /[+-]?([1-9](_?\d)*|0)(?![A-Za-z0-9_-]+)/
+    HEX_INTEGER = /0x[0-9A-Fa-f][0-9A-Fa-f_]*/
+    OCT_INTEGER = /0o[0-7][0-7_]*/
+    BIN_INTEGER = /0b[01][01_]*/
     TRUE   = /true/
     FALSE  = /false/
 
@@ -42,6 +45,9 @@ module Tomlrb
       when text = @ss.scan(FLOAT_INF) then [:FLOAT_INF, text]
       when text = @ss.scan(FLOAT_NAN) then [:FLOAT_NAN, text]
       when text = @ss.scan(INTEGER) then [:INTEGER, text]
+      when text = @ss.scan(HEX_INTEGER) then [:HEX_INTEGER, text]
+      when text = @ss.scan(OCT_INTEGER) then [:OCT_INTEGER, text]
+      when text = @ss.scan(BIN_INTEGER) then [:BIN_INTEGER, text]
       when text = @ss.scan(TRUE)   then [:TRUE, text]
       when text = @ss.scan(FALSE)  then [:FALSE, text]
       when text = @ss.scan(IDENTIFIER) then [:IDENTIFIER, text]
