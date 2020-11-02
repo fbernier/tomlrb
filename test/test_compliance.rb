@@ -45,7 +45,7 @@ describe Tomlrb::Parser do
     local_path = toml_path.parent.basename/toml_path.basename
 
     it "raises an error on parsing #{local_path}" do
-      _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError
+      _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError
     end
   end
 end
