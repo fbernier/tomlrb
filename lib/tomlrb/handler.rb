@@ -54,7 +54,7 @@ module Tomlrb
       while key = k.shift
         key = k.to_sym if @symbolize_keys
         if k.empty?
-          raise ParseError, "Cannot overwrite value with key #{key}" unless current.respond_to?(:[]=)
+          raise ParseError, "Cannot overwrite value with key #{key}" unless current.kind_of?(Hash)
           current[key] = @stack.pop
         else
           current[key] ||= {}
