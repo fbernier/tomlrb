@@ -43,6 +43,7 @@ module Tomlrb
       if is_array_of_tables
         last_identifier = last_identifier.to_sym if @symbolize_keys
         @current[last_identifier] ||= []
+        raise ParseError, "Cannot use key #{last_identifier} for both table and array at once" unless @current[last_identifier].respond_to?(:<<)
         @current[last_identifier] << {}
         @current = @current[last_identifier].last
       end
