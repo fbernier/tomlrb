@@ -62,15 +62,18 @@ rule
     : '=' value
     ;
   assignment
-    : IDENTIFIER '=' value { @handler.assign(val[0]) }
-    | STRING_BASIC '=' value { @handler.assign(val[0]) }
-    | STRING_LITERAL '=' value { @handler.assign(val[0]) }
-    | INTEGER '=' value { @handler.assign(val[0]) }
-    | HEX_INTEGER '=' value { @handler.assign(val[0]) }
-    | OCT_INTEGER '=' value { @handler.assign(val[0]) }
-    | BIN_INTEGER '=' value { @handler.assign(val[0]) }
-    | TRUE '=' value { @handler.assign(val[0]) }
-    | FALSE '=' value { @handler.assign(val[0]) }
+    : assignment_key_component '=' value { @handler.assign(val[0]) }
+
+  assignment_key_component
+    : IDENTIFIER
+    | STRING_BASIC
+    | STRING_LITERAL
+    | INTEGER
+    | HEX_INTEGER
+    | OCT_INTEGER
+    | BIN_INTEGER
+    | TRUE
+    | FALSE
     ;
   array
     : start_array array_continued
