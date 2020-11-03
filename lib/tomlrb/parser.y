@@ -67,12 +67,10 @@ rule
       @handler.push(keys.pop)
       @handler.assign(keys)
     }
-
   assignment_key
     : assignment_key '.' assignment_key_component { @handler.push(val[2]) }
     | assignment_key_component { @handler.start_(:keys); @handler.push(val[0]) }
     ;
-
   assignment_key_component
     : IDENTIFIER
     | STRING_BASIC
