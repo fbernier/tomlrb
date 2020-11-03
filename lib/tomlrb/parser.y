@@ -27,15 +27,18 @@ rule
     | '.' table_continued
     ;
   table_identifier
-    : IDENTIFIER { @handler.push(val[0]) }
-    | STRING_BASIC { @handler.push(val[0]) }
-    | STRING_LITERAL { @handler.push(val[0]) }
-    | INTEGER { @handler.push(val[0]) }
-    | HEX_INTEGER { @handler.push(val[0]) }
-    | OCT_INTEGER { @handler.push(val[0]) }
-    | BIN_INTEGER { @handler.push(val[0]) }
-    | TRUE { @handler.push(val[0]) }
-    | FALSE { @handler.push(val[0]) }
+    : table_identifier_component { @handler.push(val[0]) }
+    ;
+  table_identifier_component
+    : IDENTIFIER
+    | STRING_BASIC
+    | STRING_LITERAL
+    | INTEGER
+    | HEX_INTEGER
+    | OCT_INTEGER
+    | BIN_INTEGER
+    | TRUE
+    | FALSE
     ;
   inline_table
     : inline_table_start inline_continued
