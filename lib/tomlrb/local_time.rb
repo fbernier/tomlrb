@@ -36,7 +36,8 @@ module Tomlrb
     end
 
     def ==(other)
-      @time == other.to_time(0, 1, 1)
+      other.respond_to?(:to_time) &&
+        @time == other.to_time(0, 1, 1)
     end
   end
 end

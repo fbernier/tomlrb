@@ -56,7 +56,8 @@ module Tomlrb
     end
 
     def ==(other)
-      to_time == other.to_time
+      other.respond_to?(:to_time) &&
+        to_time == other.to_time
     end
   end
 end
