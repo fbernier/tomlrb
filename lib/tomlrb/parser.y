@@ -42,22 +42,25 @@ rule
     | FALSE
     ;
   inline_table
-    : inline_table_start inline_continued
+    : inline_table_start inline_table_end
+    | inline_table_start inline_continued inline_table_end
     ;
   inline_table_start
     : '{' { @handler.start_(:inline) }
     ;
-  inline_continued
-    : '}' { array = @handler.end_(:inline); @handler.push(Hash[*array]) }
-    | inline_assignment_key inline_assignment_value inline_next
-    ;
-  inline_next
+  inline_table_end
     : '}' {
       array = @handler.end_(:inline)
       array.map!.with_index{ |n,i| i.even? ? n.to_sym : n } if @handler.symbolize_keys
       @handler.push(Hash[*array])
     }
-    | ',' inline_continued
+    ;
+  inline_continued
+    : inline_assignment_key inline_assignment_value
+    | inline_assignment_key inline_assignment_value inline_next
+    ;
+  inline_next
+    : ',' inline_continued
     ;
   inline_assignment_key
     : inline_assignment_key '.' IDENTIFIER {
