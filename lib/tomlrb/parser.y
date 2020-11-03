@@ -69,6 +69,12 @@ rule
     }
   assignment_key
     : assignment_key '.' assignment_key_component { @handler.push(val[2]) }
+    | assignment_key '.' FLOAT { val[2].split('.').each { |k| @handler.push(k) } }
+    | FLOAT {
+      keys = val[0].split('.')
+      @handler.start_(:keys)
+      keys.each { |key| @handler.push(key) }
+    }
     | assignment_key_component { @handler.start_(:keys); @handler.push(val[0]) }
     ;
   assignment_key_component
