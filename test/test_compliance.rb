@@ -20,6 +20,10 @@ RATIONAL_TIME = %w[
   values/spec-date-time-6.yaml
 ]
 
+INT_KEY = %w[
+  values/spec-key-value-pair-9.yaml
+]
+
 describe Tomlrb::Parser do
   tests_dir = File.join(__dir__, '../toml-spec-tests')
   Pathname.glob("#{tests_dir}/values/*.toml").each do |toml_path|
@@ -89,6 +93,11 @@ def load_yaml(path)
     data = data.each_with_object({}) {|(key, value), table|
       sec_frac = value.to_f.to_s.split('.')[1]
       table[key] = Time.new(value.year, value.month, value.day, value.hour, value.min, "#{value.sec}.#{sec_frac}".to_f, value.zone || value.utc_offset)
+    }
+  end
+  if INT_KEY.include? local_path.to_path
+    data = data.each_with_object({}) {|(key, value), table|
+      table[key.to_s] = value.each_with_object({}) {|(k, v), t| t[k.to_s] = v}
     }
   end
 
