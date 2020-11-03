@@ -6,9 +6,9 @@ module Tomlrb
     IDENTIFIER = /[A-Za-z0-9_-]+/
     SPACE = /[ \t\r\n]/
     STRING_BASIC = /(["])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/
-    STRING_MULTI = /"{3}([^\u0000-\u0008\u000A-\u001F\u007F]*"{3,4})/m
+    STRING_MULTI = /"{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*"{3,4})/m
     STRING_LITERAL = /(['])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/
-    STRING_LITERAL_MULTI = /'{3}([^\u0000-\u0008\u000A-\u001F\u007F]*?'{3})/m
+    STRING_LITERAL_MULTI = /'{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?'{3})/m
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})/i
     LOCAL_DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/i
     LOCAL_DATE = /(-?\d{4})-(\d{2})-(\d{2})/
