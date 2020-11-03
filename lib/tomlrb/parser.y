@@ -62,7 +62,16 @@ rule
     : '=' value
     ;
   assignment
-    : assignment_key_component '=' value { @handler.assign(val[0]) }
+    : assignment_key '=' value {
+      keys = @handler.end_(:keys)
+      @handler.push(keys.pop)
+      @handler.assign(keys)
+    }
+
+  assignment_key
+    : assignment_key '.' assignment_key_component { @handler.push(val[2]) }
+    | assignment_key_component { @handler.start_(:keys); @handler.push(val[0]) }
+    ;
 
   assignment_key_component
     : IDENTIFIER

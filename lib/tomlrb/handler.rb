@@ -49,8 +49,17 @@ module Tomlrb
     end
 
     def assign(k)
-      k = k.to_sym if @symbolize_keys
-      @current[k] = @stack.pop
+      current = @current
+      while key = k.shift
+        key = k.to_sym if @symbolize_keys
+        if k.empty?
+          raise ParseError, "Cannot overwrite value with key #{key}" unless current.respond_to?(:[]=)
+          current[key] = @stack.pop
+        else
+          current[key] ||= {}
+          current = current[key]
+        end
+      end
     end
 
     def push(o)
