@@ -27,7 +27,8 @@ rule
     | '.' table_continued
     ;
   table_identifier
-    : table_identifier_component { @handler.push(val[0]) }
+    : table_identifier '.' table_identifier_component { @handler.push(val[2]) }
+    | table_identifier_component { @handler.push(val[0]) }
     ;
   table_identifier_component
     : IDENTIFIER
@@ -59,7 +60,13 @@ rule
     | ',' inline_continued
     ;
   inline_assignment_key
-    : IDENTIFIER { @handler.push(val[0]) }
+    : inline_assignment_key '.' IDENTIFIER {
+      array = @handler.end_(:inline)
+      array.each { |key| @handler.push(key) }
+      @handler.start_(:inline)
+      @handler.push(val[2])
+    }
+    | IDENTIFIER { @handler.push(val[0]) }
     ;
   inline_assignment_value
     : '=' value
