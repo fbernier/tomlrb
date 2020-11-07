@@ -29,5 +29,9 @@ module Tomlrb
     def ==(other)
       to_time == other.to_time
     end
+
+    def inspect
+      "#<#{self.class}: #{to_s}>"
+    end
   end
 end
