@@ -80,4 +80,77 @@ module Tomlrb
       array
     end
   end
+
+  class Keys
+    def initialize
+      @keys = {}
+    end
+
+    def add_table_key(keys)
+      self << [keys, []]
+    end
+
+    def add_pair_key(keys, context)
+      self << [context, keys]
+    end
+
+    def <<(keys)
+      table_keys, pair_keys = keys
+      current = @keys
+      table_keys.each_with_index do |key, index|
+        declared = (index == table_keys.length - 1) && pair_keys.empty?
+        if index == 0
+          existed = current[key]
+          if existed && existed.type == :pair
+            raise Key::KeyConflict, "Key #{key} is already used as #{existed.type} key"
+          end
+          if existed && existed.declared? && declared
+            raise Key::KeyConflict, "Key #{key} is already used"
+          end
+          k = existed || Key.new(key, :table, declared)
+          current[key] = k
+          current = k
+        else
+          current = current << [key, :table, declared]
+        end
+      end
+      pair_keys.each_with_index do |key, index|
+        declared = index == pair_keys.length - 1
+        key = current << [key, :pair, declared]
+        current = key
+      end
+    end
+  end
+
+  class Key
+    class KeyConflict < ParseError; end
+
+    attr_reader :key, :type
+
+    def initialize(key, type, declared = false)
+      @key = key
+      @type = type
+      @declared = declared
+      @children = {}
+    end
+
+    def declared?
+      @declared
+    end
+
+    def <<(key_type_declared)
+      key, type, declared = key_type_declared
+      existed = @children[key]
+      if declared && existed && existed.declared? && existed.type != type
+        raise KeyConflict, "Key #{key} is already used as #{existed.type} key"
+      end
+      if declared && type == :table && existed && existed.declared?
+        raise KeyConflict, "Key #{key} is already used"
+      end
+      if declared && (type == :table) && existed && (existed.type == :pair) && (! existed.declared?)
+        raise KeyConflict, "Key #{key} is already used as #{existed.type} key"
+      end
+      @children[key] = existed || self.class.new(key, type, declared)
+    end
+  end
 end
