@@ -7,11 +7,13 @@ module Tomlrb
       @current = @output
       @stack = []
       @array_names = []
+      @current_table = []
       @keys = Keys.new
       @symbolize_keys = options[:symbolize_keys]
     end
 
     def set_context(identifiers, is_array_of_tables: false)
+      @current_table = identifiers
       @keys.add_table_key identifiers, is_array_of_tables
       @current = @output
 
@@ -52,6 +54,7 @@ module Tomlrb
     end
 
     def assign(k)
+      @keys.add_pair_key k, @current_table
       current = @current
       while key = k.shift
         key = k.to_sym if @symbolize_keys
@@ -151,6 +154,9 @@ module Tomlrb
       end
       if declared && (type == :table) && existed && (existed.type == :pair) && (! existed.declared?)
         raise KeyConflict, "Key #{key} is already used as #{existed.type} key"
+      end
+      if ! declared && (type == :pair) && existed && (existed.type == :pair) && existed.declared?
+        raise KeyConflict, "Key #{key} is already used as #{type} key"
       end
       @children[key] = existed || self.class.new(key, type, declared)
     end
