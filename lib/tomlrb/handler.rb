@@ -164,6 +164,9 @@ module Tomlrb
       if ! declared && (type == :pair) && existed && (existed.type == :pair) && existed.declared?
         raise KeyConflict, "Key #{key} is already used as #{type} key"
       end
+      if existed && ! existed.declared? && declared
+        raise KeyConflict, "Key #{key} is already used as #{type} key"
+      end
       @children[key] = existed || self.class.new(key, type, declared)
     end
   end
