@@ -7,10 +7,12 @@ module Tomlrb
       @current = @output
       @stack = []
       @array_names = []
+      @keys = Keys.new
       @symbolize_keys = options[:symbolize_keys]
     end
 
     def set_context(identifiers, is_array_of_tables: false)
+      @keys.add_table_key identifiers, is_array_of_tables
       @current = @output
 
       deal_with_array_of_tables(identifiers, is_array_of_tables) do |identifierz|
@@ -86,16 +88,16 @@ module Tomlrb
       @keys = {}
     end
 
-    def add_table_key(keys)
-      self << [keys, []]
+    def add_table_key(keys, is_array_of_tables = false)
+      self << [keys, [], is_array_of_tables]
     end
 
     def add_pair_key(keys, context)
-      self << [context, keys]
+      self << [context, keys, false]
     end
 
     def <<(keys)
-      table_keys, pair_keys = keys
+      table_keys, pair_keys, is_array_of_tables = keys
       current = @keys
       table_keys.each_with_index do |key, index|
         declared = (index == table_keys.length - 1) && pair_keys.empty?
@@ -104,19 +106,19 @@ module Tomlrb
           if existed && existed.type == :pair
             raise Key::KeyConflict, "Key #{key} is already used as #{existed.type} key"
           end
-          if existed && existed.declared? && declared
+          if existed && existed.declared? && declared && ! is_array_of_tables
             raise Key::KeyConflict, "Key #{key} is already used"
           end
           k = existed || Key.new(key, :table, declared)
           current[key] = k
           current = k
         else
-          current = current << [key, :table, declared]
+          current = current << [key, :table, declared, is_array_of_tables]
         end
       end
       pair_keys.each_with_index do |key, index|
         declared = index == pair_keys.length - 1
-        key = current << [key, :pair, declared]
+        key = current << [key, :pair, declared, is_array_of_tables]
         current = key
       end
     end
@@ -139,12 +141,12 @@ module Tomlrb
     end
 
     def <<(key_type_declared)
-      key, type, declared = key_type_declared
+      key, type, declared, is_array_of_tables = key_type_declared
       existed = @children[key]
       if declared && existed && existed.declared? && existed.type != type
         raise KeyConflict, "Key #{key} is already used as #{existed.type} key"
       end
-      if declared && type == :table && existed && existed.declared?
+      if declared && type == :table && existed && existed.declared? && ! is_array_of_tables
         raise KeyConflict, "Key #{key} is already used"
       end
       if declared && (type == :table) && existed && (existed.type == :pair) && (! existed.declared?)
