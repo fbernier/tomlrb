@@ -13,7 +13,7 @@ module Tomlrb
     end
 
     def set_context(identifiers, is_array_of_tables: false)
-      @current_table = identifiers
+      @current_table = identifiers.dup
       @keys.add_table_key identifiers, is_array_of_tables
       @current = @output
 
@@ -122,6 +122,10 @@ module Tomlrb
       pair_keys.each_with_index do |key, index|
         declared = index == pair_keys.length - 1
         if index == 0 && table_keys.empty?
+          existed = current[key]
+          if existed && existed.declared? && (existed.type == :pair) && declared && table_keys.empty?
+            raise Key::KeyConflict, "Key #{key} is already used"
+          end
           k = Key.new(key, :pair, declared)
           current[key] = k
           current = k
