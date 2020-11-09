@@ -121,8 +121,14 @@ module Tomlrb
       end
       pair_keys.each_with_index do |key, index|
         declared = index == pair_keys.length - 1
-        key = current << [key, :pair, declared, is_array_of_tables]
-        current = key
+        if index == 0 && table_keys.empty?
+          k = Key.new(key, :pair, declared)
+          current[key] = k
+          current = k
+        else
+          key = current << [key, :pair, declared, is_array_of_tables]
+          current = key
+        end
       end
     end
   end
