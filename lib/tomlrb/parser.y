@@ -81,6 +81,7 @@ rule
       @handler.push(keys.pop)
       @handler.assign(keys)
     }
+    ;
   assignment_key
     : assignment_key '.' assignment_key_component { @handler.push(val[2]) }
     | assignment_key '.' FLOAT { val[2].split('.').each { |k| @handler.push(k) } }
