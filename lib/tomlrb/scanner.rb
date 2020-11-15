@@ -4,7 +4,8 @@ module Tomlrb
   class Scanner
     COMMENT = /#[^\u0000-\u0008\u000A-\u001F\u007F]*/
     IDENTIFIER = /[A-Za-z0-9_-]+/
-    SPACE = /[ \t\r\n]/
+    SPACE = /[ \t]/
+    NEWLINE = /[\r\n]/
     STRING_BASIC = /(["])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/
     STRING_MULTI = /"{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?(?<!\\)"{3,5})/m
     STRING_LITERAL = /(['])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/
@@ -50,6 +51,7 @@ module Tomlrb
       when text = @ss.scan(BIN_INTEGER) then [:BIN_INTEGER, text]
       when text = @ss.scan(TRUE)   then [:TRUE, text]
       when text = @ss.scan(FALSE)  then [:FALSE, text]
+      when text = @ss.scan(NEWLINE) then [:NEWLINE, text]
       when text = @ss.scan(IDENTIFIER) then [:IDENTIFIER, text]
       else
         x = @ss.getch
