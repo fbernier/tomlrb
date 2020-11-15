@@ -470,21 +470,21 @@ module_eval(<<'.,.,', 'parser.y', 79)
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 84)
+module_eval(<<'.,.,', 'parser.y', 85)
   def _reduce_38(val, _values, result)
      @handler.push(val[2])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 85)
+module_eval(<<'.,.,', 'parser.y', 86)
   def _reduce_39(val, _values, result)
      val[2].split('.').each { |k| @handler.push(k) }
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 87)
+module_eval(<<'.,.,', 'parser.y', 88)
   def _reduce_40(val, _values, result)
           keys = val[0].split('.')
       @handler.start_(:keys)
@@ -494,7 +494,7 @@ module_eval(<<'.,.,', 'parser.y', 87)
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 91)
+module_eval(<<'.,.,', 'parser.y', 92)
   def _reduce_41(val, _values, result)
      @handler.start_(:keys); @handler.push(val[0])
     result
@@ -521,7 +521,7 @@ module_eval(<<'.,.,', 'parser.y', 91)
 
 # reduce 51 omitted
 
-module_eval(<<'.,.,', 'parser.y', 108)
+module_eval(<<'.,.,', 'parser.y', 109)
   def _reduce_52(val, _values, result)
      array = @handler.end_(:array); @handler.push(array)
     result
@@ -532,7 +532,7 @@ module_eval(<<'.,.,', 'parser.y', 108)
 
 # reduce 54 omitted
 
-module_eval(<<'.,.,', 'parser.y', 113)
+module_eval(<<'.,.,', 'parser.y', 114)
   def _reduce_55(val, _values, result)
      array = @handler.end_(:array); @handler.push(array)
     result
@@ -545,14 +545,14 @@ module_eval(<<'.,.,', 'parser.y', 113)
 
 # reduce 58 omitted
 
-module_eval(<<'.,.,', 'parser.y', 119)
+module_eval(<<'.,.,', 'parser.y', 120)
   def _reduce_59(val, _values, result)
      @handler.start_(:array)
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 122)
+module_eval(<<'.,.,', 'parser.y', 123)
   def _reduce_60(val, _values, result)
      @handler.push(val[0])
     result
@@ -569,119 +569,119 @@ module_eval(<<'.,.,', 'parser.y', 122)
 
 # reduce 65 omitted
 
-module_eval(<<'.,.,', 'parser.y', 131)
+module_eval(<<'.,.,', 'parser.y', 132)
   def _reduce_66(val, _values, result)
      result = val[0].to_f
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 132)
+module_eval(<<'.,.,', 'parser.y', 133)
   def _reduce_67(val, _values, result)
      result = (val[0][0] == '-' ? -1 : 1) * Float::INFINITY
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 133)
+module_eval(<<'.,.,', 'parser.y', 134)
   def _reduce_68(val, _values, result)
      result = Float::NAN
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 134)
+module_eval(<<'.,.,', 'parser.y', 135)
   def _reduce_69(val, _values, result)
      result = val[0].to_i
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 135)
+module_eval(<<'.,.,', 'parser.y', 136)
   def _reduce_70(val, _values, result)
      result = val[0].to_i(16)
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 136)
+module_eval(<<'.,.,', 'parser.y', 137)
   def _reduce_71(val, _values, result)
      result = val[0].to_i(8)
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 137)
+module_eval(<<'.,.,', 'parser.y', 138)
   def _reduce_72(val, _values, result)
      result = val[0].to_i(2)
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 138)
+module_eval(<<'.,.,', 'parser.y', 139)
   def _reduce_73(val, _values, result)
      result = true
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 139)
+module_eval(<<'.,.,', 'parser.y', 140)
   def _reduce_74(val, _values, result)
      result = false
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 140)
+module_eval(<<'.,.,', 'parser.y', 141)
   def _reduce_75(val, _values, result)
      result = Time.new(*val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 141)
+module_eval(<<'.,.,', 'parser.y', 142)
   def _reduce_76(val, _values, result)
      result = LocalDateTime.new(*val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 142)
+module_eval(<<'.,.,', 'parser.y', 143)
   def _reduce_77(val, _values, result)
      result = LocalDate.new(*val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 143)
+module_eval(<<'.,.,', 'parser.y', 144)
   def _reduce_78(val, _values, result)
      result = LocalTime.new(*val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 146)
+module_eval(<<'.,.,', 'parser.y', 147)
   def _reduce_79(val, _values, result)
      result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0]))
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 147)
+module_eval(<<'.,.,', 'parser.y', 148)
   def _reduce_80(val, _values, result)
      result = StringUtils.replace_escaped_chars(val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 148)
+module_eval(<<'.,.,', 'parser.y', 149)
   def _reduce_81(val, _values, result)
      result = StringUtils.strip_spaces(val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 149)
+module_eval(<<'.,.,', 'parser.y', 150)
   def _reduce_82(val, _values, result)
      result = val[0]
     result
