@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE
 rule
   expressions
     | expressions expression
@@ -8,6 +8,7 @@ rule
     : table
     | assignment
     | inline_table
+    | NEWLINE
     ;
   table
     : table_start table_continued
@@ -107,10 +108,13 @@ rule
   array_continued
     : ']' { array = @handler.end_(:array); @handler.push(array) }
     | value array_next
+    | NEWLINE array_continued
     ;
   array_next
     : ']' { array = @handler.end_(:array); @handler.push(array) }
     | ',' array_continued
+    | NEWLINE array_continued
+    | ',' NEWLINE array_continued
     ;
   start_array
     : '[' { @handler.start_(:array) }
