@@ -1,20 +1,13 @@
+require 'forwardable'
+
 module Tomlrb
   class LocalDate
+    extend Forwardable
+
+    def_delegators :@time, :year, :month, :day
+
     def initialize(year, month, day)
       @time = Time.new(year, month, day, 0, 0, 0, '-00:00')
-    end
-
-    def year
-      @time.year
-    end
-
-    def month
-      @time.month
-    end
-    alias mon month
-
-    def day
-      @time.day
     end
 
     def to_time(offset='-00:00')

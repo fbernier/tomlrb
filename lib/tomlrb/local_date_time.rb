@@ -1,41 +1,14 @@
+require 'forwardable'
+
 module Tomlrb
   class LocalDateTime
+    extend Forwardable
+
+    def_delegators :@time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
+
     def initialize(year, month, day, hour, min, sec)
       @time = Time.new(year, month, day, hour, min, sec, '-00:00')
       @sec = sec
-    end
-
-    def year
-      @time.year
-    end
-
-    def month
-      @time.month
-    end
-    alias mon month
-
-    def day
-      @time.day
-    end
-
-    def hour
-      @time.hour
-    end
-
-    def min
-      @time.min
-    end
-
-    def sec
-      @time.sec
-    end
-
-    def usec
-      @time.usec
-    end
-
-    def nsec
-      @time.nsec
     end
 
     # @param offset [String, Symbol, Numeric, nil] time zone offset.

@@ -1,28 +1,14 @@
+require 'forwardable'
+
 module Tomlrb
   class LocalTime
+    extend Forwardable
+
+    def_delegators :@time, :hour, :min, :sec, :usec, :nsec
+
     def initialize(hour, min, sec)
       @time = Time.new(0, 1, 1, hour, min, sec, '-00:00')
       @sec = sec
-    end
-
-    def hour
-      @time.hour
-    end
-
-    def min
-      @time.min
-    end
-
-    def sec
-      @time.sec
-    end
-
-    def usec
-      @time.usec
-    end
-
-    def nsec
-      @time.nsec
     end
 
     def to_time(year, month, day, offset='-00:00')
