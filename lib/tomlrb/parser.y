@@ -1,8 +1,9 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE EOS
 rule
   expressions
     | expressions expression
+    | expressions EOS
     ;
   expression
     : table
@@ -76,7 +77,12 @@ rule
     : '=' value
     ;
   assignment
-    : assignment_key '=' value {
+    : assignment_key '=' value EOS {
+      keys = @handler.end_(:keys)
+      @handler.push(keys.pop)
+      @handler.assign(keys)
+    }
+    | assignment_key '=' value NEWLINE {
       keys = @handler.end_(:keys)
       @handler.push(keys.pop)
       @handler.assign(keys)
