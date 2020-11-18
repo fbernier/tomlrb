@@ -19,7 +19,7 @@ module Tomlrb
     # @return [Time]
     def to_time(offset='-00:00')
       return @time if offset == '-00:00'
-      Time.new(@time.year, @time.month, @time.day, @time.hour, @time.min, @sec, offset)
+      Time.new(year, month, day, hour, min, @sec, offset)
     end
 
     def to_s
