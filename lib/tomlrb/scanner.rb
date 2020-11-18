@@ -26,12 +26,12 @@ module Tomlrb
 
     def initialize(io)
       @ss = StringScanner.new(io.read)
+      @eos = false
     end
 
     def next_token
-      return if @ss.eos?
-
       case
+      when @ss.eos? then process_eos
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime
@@ -82,6 +82,15 @@ module Tomlrb
     def process_local_time
       args = [@ss[1], @ss[2], @ss[3].to_f]
       [:LOCAL_TIME, args]
+    end
+
+    def process_eos
+      if @eos
+        nil
+      else
+        @eos = true
+        [:EOS, nil]
+      end
     end
   end
 end
