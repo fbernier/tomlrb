@@ -6,6 +6,7 @@ Rake::TestTask.new do |t|
   t.test_files = FileList['test/test*.rb']
   t.verbose = true
 end
+task test: :compile
 
 task default: [:test]
 

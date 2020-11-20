@@ -43,8 +43,6 @@ module Tomlrb
       when text = @ss.scan(STRING_LITERAL_MULTI) then [:STRING_LITERAL_MULTI, text[3..-4]]
       when text = @ss.scan(STRING_LITERAL) then [:STRING_LITERAL, text[1..-2]]
       when text = @ss.scan(FLOAT) then [:FLOAT, text]
-      when text = @ss.scan(FLOAT_INF) then [:FLOAT_INF, text]
-      when text = @ss.scan(FLOAT_NAN) then [:FLOAT_NAN, text]
       when text = @ss.scan(INTEGER) then [:INTEGER, text]
       when text = @ss.scan(HEX_INTEGER) then [:HEX_INTEGER, text]
       when text = @ss.scan(OCT_INTEGER) then [:OCT_INTEGER, text]
@@ -53,6 +51,8 @@ module Tomlrb
       when text = @ss.scan(FALSE)  then [:FALSE, text]
       when text = @ss.scan(NEWLINE) then [:NEWLINE, text]
       when text = @ss.scan(IDENTIFIER) then [:IDENTIFIER, text]
+      when text = @ss.scan(FLOAT_INF) then [:FLOAT_INF, text]
+      when text = @ss.scan(FLOAT_NAN) then [:FLOAT_NAN, text]
       else
         x = @ss.getch
         [x, x]
