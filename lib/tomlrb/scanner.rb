@@ -85,12 +85,10 @@ module Tomlrb
     end
 
     def process_eos
-      if @eos
-        nil
-      else
-        @eos = true
-        [:EOS, nil]
-      end
+      return if @eos
+
+      @eos = true
+      [:EOS, nil]
     end
   end
 end
