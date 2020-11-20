@@ -92,7 +92,7 @@ def load_yaml(path)
   if RATIONAL_TIME.include? local_path.to_path
     data = data.each_with_object({}) {|(key, value), table|
       sec_frac = value.to_f.to_s.split('.')[1]
-      table[key] = Time.new(value.year, value.month, value.day, value.hour, value.min, "#{value.sec}.#{sec_frac}".to_f, value.zone || value.utc_offset)
+      table[key] = Time.new(value.year, value.month, value.day, value.hour, value.min, "#{value.sec}.#{sec_frac}".to_f, value.utc_offset || value.zone)
     }
   end
   if INT_KEY.include? local_path.to_path
