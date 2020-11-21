@@ -102,8 +102,15 @@ module Tomlrb
     def <<(keys)
       table_keys, pair_keys, is_array_of_tables = keys
       current = @keys
+      current = append_table_keys(current, table_keys, pair_keys.empty?, is_array_of_tables)
+      append_pair_keys(current, pair_keys, table_keys.empty?, is_array_of_tables)
+    end
+
+    private
+
+    def append_table_keys(current, table_keys, pair_keys_empty, is_array_of_tables)
       table_keys.each_with_index do |key, index|
-        declared = (index == table_keys.length - 1) && pair_keys.empty?
+        declared = (index == table_keys.length - 1) && pair_keys_empty
         if index == 0
           existed = current[key]
           if existed && existed.type == :pair
@@ -119,11 +126,16 @@ module Tomlrb
           current = current << [key, :table, declared, is_array_of_tables]
         end
       end
+
+      current
+    end
+
+    def append_pair_keys(current, pair_keys, table_keys_empty, is_array_of_tables)
       pair_keys.each_with_index do |key, index|
         declared = index == pair_keys.length - 1
-        if index == 0 && table_keys.empty?
+        if index == 0 && table_keys_empty
           existed = current[key]
-          if existed && existed.declared? && (existed.type == :pair) && declared && table_keys.empty?
+          if existed && existed.declared? && (existed.type == :pair) && declared && table_keys_empty
             raise Key::KeyConflict, "Key #{key} is already used"
           end
           k = Key.new(key, :pair, declared)
