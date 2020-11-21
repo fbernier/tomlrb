@@ -9,7 +9,10 @@ module Tomlrb
     STRING_MULTI = /"{3}([\s\S]*?"{3,4})/m
     STRING_LITERAL = /(['])(?:\\?.)*?\1/
     STRING_LITERAL_MULTI = /'{3}([\s\S]*?'{3})/m
-    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
+    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})/i
+    LOCAL_DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/i
+    LOCAL_DATE = /(-?\d{4})-(\d{2})-(\d{2})/
+    LOCAL_TIME = /(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/
     FLOAT = /[+-]?(?:[0-9_]+\.[0-9_]*|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?/
     FLOAT_INF = /[+-]?inf/
     FLOAT_NAN = /[+-]?nan/
@@ -28,6 +31,9 @@ module Tomlrb
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime
+      when @ss.scan(LOCAL_DATETIME) then process_local_datetime
+      when @ss.scan(LOCAL_DATE) then process_local_date
+      when @ss.scan(LOCAL_TIME) then process_local_time
       when text = @ss.scan(STRING_MULTI) then [:STRING_MULTI, text[3..-4]]
       when text = @ss.scan(STRING_BASIC) then [:STRING_BASIC, text[1..-2]]
       when text = @ss.scan(STRING_LITERAL_MULTI) then [:STRING_LITERAL_MULTI, text[3..-4]]
@@ -53,6 +59,21 @@ module Tomlrb
       end
       args = [@ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f, offset]
       [:DATETIME, args]
+    end
+
+    def process_local_datetime
+      args = [@ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f]
+      [:LOCAL_DATETIME, args]
+    end
+
+    def process_local_date
+      args = [@ss[1], @ss[2], @ss[3]]
+      [:LOCAL_DATE, args]
+    end
+
+    def process_local_time
+      args = [@ss[1], @ss[2], @ss[3].to_f]
+      [:LOCAL_TIME, args]
     end
   end
 end

@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE
 rule
   expressions
     | expressions expression
@@ -97,6 +97,9 @@ rule
     | TRUE   { result = true }
     | FALSE  { result = false }
     | DATETIME { result = Time.new(*val[0])}
+    | LOCAL_DATETIME { result = LocalDateTime.new(*val[0]) }
+    | LOCAL_DATE { result = LocalDate.new(*val[0]) }
+    | LOCAL_TIME { result = LocalTime.new(*val[0]) }
     ;
   string
     : STRING_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0])) }

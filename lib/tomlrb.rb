@@ -1,6 +1,9 @@
 require 'time'
 require 'stringio'
 require "tomlrb/version"
+require 'tomlrb/local_date_time'
+require 'tomlrb/local_date'
+require 'tomlrb/local_time'
 require 'tomlrb/string_utils'
 require "tomlrb/scanner"
 require "tomlrb/parser"
