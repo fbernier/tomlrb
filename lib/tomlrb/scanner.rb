@@ -53,9 +53,7 @@ module Tomlrb
       when text = @ss.scan(FALSE)  then [:FALSE, text]
       when text = @ss.scan(NEWLINE) then [:NEWLINE, text]
       when text = @ss.scan(IDENTIFIER) then [:IDENTIFIER, text]
-      else
-        x = @ss.getch
-        [x, x]
+      else x = @ss.getch; [x, x]
       end
     end
 
