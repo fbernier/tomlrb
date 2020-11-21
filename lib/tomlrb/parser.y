@@ -40,6 +40,8 @@ rule
     | HEX_INTEGER
     | OCT_INTEGER
     | BIN_INTEGER
+    | FLOAT_INF
+    | FLOAT_NAN
     | TRUE
     | FALSE
     ;
@@ -106,6 +108,8 @@ rule
     | HEX_INTEGER
     | OCT_INTEGER
     | BIN_INTEGER
+    | FLOAT_INF
+    | FLOAT_NAN
     | TRUE
     | FALSE
     ;
