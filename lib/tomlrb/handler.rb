@@ -58,13 +58,7 @@ module Tomlrb
       current = @current
       while key = k.shift
         key = key.to_sym if @symbolize_keys
-        if k.empty?
-          raise ParseError, "Cannot overwrite value with key #{key}" unless current.kind_of?(Hash)
-          current[key] = @stack.pop
-        else
-          current[key] ||= {}
-          current = current[key]
-        end
+        current = assign_key_path(current, key, k.empty?)
       end
     end
 
@@ -83,6 +77,19 @@ module Tomlrb
         array.unshift(value)
       end
       array
+    end
+
+    private
+
+    def assign_key_path(current, key, key_emptied)
+      if key_emptied
+        raise ParseError, "Cannot overwrite value with key #{key}" unless current.kind_of?(Hash)
+        current[key] = @stack.pop
+        return current
+      end
+      current[key] ||= {}
+      current = current[key]
+      current
     end
   end
 
