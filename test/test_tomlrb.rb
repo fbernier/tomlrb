@@ -101,6 +101,12 @@ class TomlExamples
   end
 
   def self.inf_in_keys_example
-    {"info"=>{"this"=>"something"}}
+    {
+      "info"=>{"this"=>"something"},
+      "inf"=>{"this"=>"something"},
+      "key1"=>{"inf"=>"something"},
+      "key2"=>{"inf"=>{}},
+      "nan"=>{"inf"=>{}}
+    }
   end
 end
