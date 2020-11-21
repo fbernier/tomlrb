@@ -57,7 +57,7 @@ module Tomlrb
       @keys.add_pair_key k, @current_table
       current = @current
       while key = k.shift
-        key = k.to_sym if @symbolize_keys
+        key = key.to_sym if @symbolize_keys
         if k.empty?
           raise ParseError, "Cannot overwrite value with key #{key}" unless current.kind_of?(Hash)
           current[key] = @stack.pop
