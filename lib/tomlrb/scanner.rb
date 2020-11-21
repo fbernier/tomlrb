@@ -29,7 +29,7 @@ module Tomlrb
       @eos = false
     end
 
-    def next_token # rubocop:disable Metrics/MethodLength
+    def next_token
       case
       when @ss.eos? then process_eos
       when @ss.scan(SPACE) then next_token
