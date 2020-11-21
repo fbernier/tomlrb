@@ -176,22 +176,44 @@ module Tomlrb
     def <<(key_type_declared)
       key, type, declared, is_array_of_tables = key_type_declared
       existed = @children[key]
+      validate_already_declared_as_different_key(type, declared, existed)
+      validate_already_declared_as_non_array_table(type, is_array_of_tables, declared, existed)
+      validate_path_already_created_as_different_type(type, declared, existed)
+      validate_path_already_declared_as_different_type(type, declared, existed)
+      validate_already_declared_as_same_key(declared, existed)
+      @children[key] = existed || self.class.new(key, type, declared)
+    end
+
+    private
+
+    def validate_already_declared_as_different_key(type, declared, existed)
       if declared && existed && existed.declared? && existed.type != type
-        raise KeyConflict, "Key #{key} is already used as #{existed.type} key"
+        raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
+    end
+
+    def validate_already_declared_as_non_array_table(type, is_array_of_tables, declared, existed)
       if declared && type == :table && existed && existed.declared? && ! is_array_of_tables
-        raise KeyConflict, "Key #{key} is already used"
+        raise KeyConflict, "Key #{existed.key} is already used"
       end
+    end
+
+    def validate_path_already_created_as_different_type(type, declared, existed)
       if declared && (type == :table) && existed && (existed.type == :pair) && (! existed.declared?)
-        raise KeyConflict, "Key #{key} is already used as #{existed.type} key"
+        raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
+    end
+
+    def validate_path_already_declared_as_different_type(type, declared, existed)
       if ! declared && (type == :pair) && existed && (existed.type == :pair) && existed.declared?
         raise KeyConflict, "Key #{key} is already used as #{type} key"
       end
+    end
+
+    def validate_already_declared_as_same_key(declared, existed)
       if existed && ! existed.declared? && declared
-        raise KeyConflict, "Key #{key} is already used as #{type} key"
+        raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
-      @children[key] = existed || self.class.new(key, type, declared)
     end
   end
 end
