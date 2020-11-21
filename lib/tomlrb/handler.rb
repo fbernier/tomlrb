@@ -112,22 +112,26 @@ module Tomlrb
       table_keys.each_with_index do |key, index|
         declared = (index == table_keys.length - 1) && pair_keys_empty
         if index == 0
-          existed = current[key]
-          if existed && existed.type == :pair
-            raise Key::KeyConflict, "Key #{key} is already used as #{existed.type} key"
-          end
-          if existed && existed.declared? && declared && ! is_array_of_tables
-            raise Key::KeyConflict, "Key #{key} is already used"
-          end
-          k = existed || Key.new(key, :table, declared)
-          current[key] = k
-          current = k
+          current = find_or_create_first_table_key(current, key, declared, is_array_of_tables)
         else
           current = current << [key, :table, declared, is_array_of_tables]
         end
       end
 
       current
+    end
+
+    def find_or_create_first_table_key(current, key, declared, is_array_of_tables)
+      existed = current[key]
+      if existed && existed.type == :pair
+        raise Key::KeyConflict, "Key #{key} is already used as #{existed.type} key"
+      end
+      if existed && existed.declared? && declared && ! is_array_of_tables
+        raise Key::KeyConflict, "Key #{key} is already used"
+      end
+      k = existed || Key.new(key, :table, declared)
+      current[key] = k
+      k
     end
 
     def append_pair_keys(current, pair_keys, table_keys_empty, is_array_of_tables)
