@@ -63,7 +63,7 @@ class TomlExamples
   def self.example_v_0_4_0
     {"table"=>{"key"=>"value", "subtable"=>{"key"=>"another value"}, "inline"=>{"name"=>{"first"=>"Tom", "last"=>"Preston-Werner"}, "point"=>{"x"=>1, "y"=>2}}},
      "x"=>{"y"=>{"z"=>{"w"=>{}}}},
-     "1"=>{"2a"=>{}},
+     "1"=>{"2"=>{},"2a"=>{}},
      "a"=>{"2"=>{}},
      "2"=>{"b"=>{}},
      "string"=>
