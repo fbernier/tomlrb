@@ -1,13 +1,15 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE EOS
 rule
   expressions
     | expressions expression
+    | expressions EOS
     ;
   expression
     : table
     | assignment
     | inline_table
+    | NEWLINE
     ;
   table
     : table_start table_continued
@@ -27,44 +29,95 @@ rule
     | '.' table_continued
     ;
   table_identifier
-    : IDENTIFIER { @handler.push(val[0]) }
-    | STRING_BASIC { @handler.push(val[0]) }
-    | STRING_LITERAL { @handler.push(val[0]) }
-    | INTEGER { @handler.push(val[0]) }
-    | TRUE { @handler.push(val[0]) }
-    | FALSE { @handler.push(val[0]) }
+    : table_identifier '.' table_identifier_component { @handler.push(val[2]) }
+    | table_identifier '.' FLOAT { val[2].split('.').each { |k| @handler.push(k) } }
+    | FLOAT {
+      keys = val[0].split('.')
+      @handler.start_(:table)
+      keys.each { |key| @handler.push(key) }
+    }
+    | table_identifier_component { @handler.push(val[0]) }
+    ;
+  table_identifier_component
+    : IDENTIFIER
+    | STRING_BASIC
+    | STRING_LITERAL
+    | INTEGER
+    | HEX_INTEGER
+    | OCT_INTEGER
+    | BIN_INTEGER
+    | FLOAT_INF
+    | FLOAT_NAN
+    | TRUE
+    | FALSE
     ;
   inline_table
-    : inline_table_start inline_continued
+    : inline_table_start inline_table_end
+    | inline_table_start inline_continued inline_table_end
     ;
   inline_table_start
     : '{' { @handler.start_(:inline) }
     ;
-  inline_continued
-    : '}' { array = @handler.end_(:inline); @handler.push(Hash[*array]) }
-    | inline_assignment_key inline_assignment_value inline_next
-    ;
-  inline_next
+  inline_table_end
     : '}' {
       array = @handler.end_(:inline)
       array.map!.with_index{ |n,i| i.even? ? n.to_sym : n } if @handler.symbolize_keys
       @handler.push(Hash[*array])
     }
-    | ',' inline_continued
+    ;
+  inline_continued
+    : inline_assignment_key inline_assignment_value
+    | inline_assignment_key inline_assignment_value inline_next
+    ;
+  inline_next
+    : ',' inline_continued
     ;
   inline_assignment_key
-    : IDENTIFIER { @handler.push(val[0]) }
+    : inline_assignment_key '.' IDENTIFIER {
+      array = @handler.end_(:inline)
+      array.each { |key| @handler.push(key) }
+      @handler.start_(:inline)
+      @handler.push(val[2])
+    }
+    | IDENTIFIER { @handler.push(val[0]) }
     ;
   inline_assignment_value
     : '=' value
     ;
   assignment
-    : IDENTIFIER '=' value { @handler.assign(val[0]) }
-    | STRING_BASIC '=' value { @handler.assign(val[0]) }
-    | STRING_LITERAL '=' value { @handler.assign(val[0]) }
-    | INTEGER '=' value { @handler.assign(val[0]) }
-    | TRUE '=' value { @handler.assign(val[0]) }
-    | FALSE '=' value { @handler.assign(val[0]) }
+    : assignment_key '=' value EOS {
+      keys = @handler.end_(:keys)
+      @handler.push(keys.pop)
+      @handler.assign(keys)
+    }
+    | assignment_key '=' value NEWLINE {
+      keys = @handler.end_(:keys)
+      @handler.push(keys.pop)
+      @handler.assign(keys)
+    }
+    ;
+  assignment_key
+    : assignment_key '.' assignment_key_component { @handler.push(val[2]) }
+    | assignment_key '.' FLOAT { val[2].split('.').each { |k| @handler.push(k) } }
+    | FLOAT {
+      keys = val[0].split('.')
+      @handler.start_(:keys)
+      keys.each { |key| @handler.push(key) }
+    }
+    | assignment_key_component { @handler.start_(:keys); @handler.push(val[0]) }
+    ;
+  assignment_key_component
+    : IDENTIFIER
+    | STRING_BASIC
+    | STRING_LITERAL
+    | INTEGER
+    | HEX_INTEGER
+    | OCT_INTEGER
+    | BIN_INTEGER
+    | FLOAT_INF
+    | FLOAT_NAN
+    | TRUE
+    | FALSE
     ;
   array
     : start_array array_continued
@@ -72,10 +125,13 @@ rule
   array_continued
     : ']' { array = @handler.end_(:array); @handler.push(array) }
     | value array_next
+    | NEWLINE array_continued
     ;
   array_next
     : ']' { array = @handler.end_(:array); @handler.push(array) }
     | ',' array_continued
+    | NEWLINE array_continued
+    | ',' NEWLINE array_continued
     ;
   start_array
     : '[' { @handler.start_(:array) }
@@ -94,6 +150,9 @@ rule
     | FLOAT_INF { result = (val[0][0] == '-' ? -1 : 1) * Float::INFINITY }
     | FLOAT_NAN { result = Float::NAN }
     | INTEGER { result = val[0].to_i }
+    | HEX_INTEGER { result = val[0].to_i(16) }
+    | OCT_INTEGER { result = val[0].to_i(8) }
+    | BIN_INTEGER { result = val[0].to_i(2) }
     | TRUE   { result = true }
     | FALSE  { result = false }
     | DATETIME { result = Time.new(*val[0])}

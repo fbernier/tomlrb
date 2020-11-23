@@ -11,6 +11,11 @@ module Tomlrb
       @sec = sec
     end
 
+    # @param year [Integer]
+    # @param month [Integer]
+    # @param day [Integer]
+    # @param offset see {LocalDateTime#to_time}
+    # @return [Time] the time of the date specified by params
     def to_time(year, month, day, offset='-00:00')
       Time.new(year, month, day, hour, min, @sec, offset)
     end
@@ -22,7 +27,8 @@ module Tomlrb
     end
 
     def ==(other)
-      @time == other.to_time(0, 1, 1)
+      other.respond_to?(:to_time) &&
+        @time == other.to_time(0, 1, 1)
     end
 
     def inspect

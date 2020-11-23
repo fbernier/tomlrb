@@ -1,4 +1,4 @@
-require 'minitest_helper' 
+require 'minitest_helper'
 describe Tomlrb::Parser do
   it "parses a toml example file" do
     parsed_file = Tomlrb.load_file('./test/example.toml')
@@ -37,12 +37,35 @@ describe Tomlrb::Parser do
     _( Tomlrb.parse("table=[ {name='name1', visible=true}, {name='name2', visible=false} ]") )
       .must_equal({"table"=>[{"name"=>"name1", "visible"=>true}, {"name"=>"name2", "visible"=>false}]})
   end
+
+  it "raises an error when parsing a float with leading underscore" do
+    _{ Tomlrb.parse('x = _1.0') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float with trailing underscore" do
+    _{ Tomlrb.parse('x = 2.0_') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float without integer before dot" do
+    _{ Tomlrb.parse('x = .1') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float without integer behind dot" do
+    _{ Tomlrb.parse('x = 0.') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float with leading 0, even in exponent" do
+    _{ Tomlrb.parse('x = 01.2') }.must_raise(Tomlrb::ParseError)
+  end
 end
 
 class TomlExamples
   def self.example_v_0_4_0
     {"table"=>{"key"=>"value", "subtable"=>{"key"=>"another value"}, "inline"=>{"name"=>{"first"=>"Tom", "last"=>"Preston-Werner"}, "point"=>{"x"=>1, "y"=>2}}},
      "x"=>{"y"=>{"z"=>{"w"=>{}}}},
+     "1"=>{"2"=>{},"2a"=>{}},
+     "a"=>{"2"=>{}},
+     "2"=>{"b"=>{}},
      "string"=>
     {"basic"=>{"basic"=>"I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."},
      "multiline"=>
@@ -101,6 +124,12 @@ class TomlExamples
   end
 
   def self.inf_in_keys_example
-    {"info"=>{"this"=>"something"}}
+    {
+      "info"=>{"this"=>"something"},
+      "inf"=>{"this"=>"something"},
+      "key1"=>{"inf"=>"something"},
+      "key2"=>{"inf"=>{}},
+      "nan"=>{"inf"=>{}}
+    }
   end
 end

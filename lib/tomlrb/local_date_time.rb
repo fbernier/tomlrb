@@ -6,7 +6,7 @@ module Tomlrb
 
     def_delegators :@time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
 
-    def initialize(year, month, day, hour, min, sec)
+    def initialize(year, month, day, hour, min, sec) # rubocop:disable Metrics/ParameterLists
       @time = Time.new(year, month, day, hour, min, sec, '-00:00')
       @sec = sec
     end
@@ -29,7 +29,8 @@ module Tomlrb
     end
 
     def ==(other)
-      to_time == other.to_time
+      other.respond_to?(:to_time) &&
+        to_time == other.to_time
     end
 
     def inspect
