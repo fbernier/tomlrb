@@ -30,6 +30,11 @@ key = "another value"
 # [x.y.z] need these
 [x.y.z.w] # for this to work
 
+# [1.2] FIXME: Raises: parse error on value "1.2" (FLOAT)
+[1.2a]
+[a.2]
+[2.b]
+
 
 ################################################################################
 ## Inline Table

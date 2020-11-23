@@ -37,12 +37,36 @@ describe Tomlrb::Parser do
     _( Tomlrb.parse("table=[ {name='name1', visible=true}, {name='name2', visible=false} ]") )
       .must_equal({"table"=>[{"name"=>"name1", "visible"=>true}, {"name"=>"name2", "visible"=>false}]})
   end
+
+  it "raises an error when parsing a float with leading underscore" do
+    proc { Tomlrb.parse('x = _1.0') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float with trailing underscore" do
+    proc { Tomlrb.parse('x = 2.0_') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float without integer before dot" do
+    proc { Tomlrb.parse('x = .1') }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "raises an error when parsing a float without integer behind dot" do
+    proc { Tomlrb.parse('x = 0.') }.must_raise(Tomlrb::ParseError)
+  end
+
+  # TODO
+  # it "raises an error when parsing a float with leading 0, even in exponent" do
+  #   proc { Tomlrb.parse('x = 01.2') }.must_raise(Tomlrb::ParseError)
+  # end
 end
 
 class TomlExamples
   def self.example_v_0_4_0
     {"table"=>{"key"=>"value", "subtable"=>{"key"=>"another value"}, "inline"=>{"name"=>{"first"=>"Tom", "last"=>"Preston-Werner"}, "point"=>{"x"=>1, "y"=>2}}},
      "x"=>{"y"=>{"z"=>{"w"=>{}}}},
+     "1"=>{"2a"=>{}},
+     "a"=>{"2"=>{}},
+     "2"=>{"b"=>{}},
      "string"=>
     {"basic"=>{"basic"=>"I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."},
      "multiline"=>
@@ -67,6 +91,9 @@ class TomlExamples
      "underscores"=>{"key1"=>9224617.445991227, "key2"=>1e1_0_0}},
     "boolean"=>{"True"=>true, "False"=>false},
     "datetime"=>{"key1"=>Time.utc(1979, 05, 27, 07, 32, 0), "key2"=>Time.new(1979, 05, 27, 00, 32, 0, '-07:00'), "key3"=>Time.new(1979, 05, 27, 00, 32, 0.999999, '-07:00'), "key4"=>Tomlrb::LocalDateTime.new(1979, 05, 27, 0, 32, 0.0), "key5"=>Tomlrb::LocalDate.new(1979, 05, 27)}, "array"=>{"key1"=>[1, 2, 3], "key2"=>["red", "yellow", "green"], "key3"=>[[1, 2], [3, 4, 5]], "key4"=>[[1, 2], ["a", "b", "c"]], "key5"=>[1, 2, 3], "key6"=>[1, 2]},
+=======
+    "datetime"=>{"key1"=>Time.new(1979, 05, 27, 07, 32, 0, '+00:00'), "key2"=>Time.new(1979, 05, 27, 00, 32, 0, '-07:00'), "key3"=>Time.new(1979, 05, 27, 00, 32, 0.999999, '-07:00'), "key4"=>Time.new(1979, 05, 27, 0, 32, 0, '+01:00'), "key5"=>Time.new(1979, 05, 27, 0, 0, 0, '+01:00')}, "array"=>{"key1"=>[1, 2, 3], "key2"=>["red", "yellow", "green"], "key3"=>[[1, 2], [3, 4, 5]], "key4"=>[[1, 2], ["a", "b", "c"]], "key5"=>[1, 2, 3], "key6"=>[1, 2]},
+>>>>>>> Axel2/fix_float
     "products"=>[{"name"=>"Hammer", "sku"=>738594937}, {}, {"name"=>"Nail", "sku"=>284758393, "color"=>"gray"}],
     "fruit"=>
     [{"name"=>"apple", "physical"=>{"color"=>"red", "shape"=>"round"}, "variety"=>[{"name"=>"red delicious"}, {"name"=>"granny smith"}]},
