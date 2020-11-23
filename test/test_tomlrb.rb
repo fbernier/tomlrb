@@ -54,10 +54,9 @@ describe Tomlrb::Parser do
     _{ Tomlrb.parse('x = 0.') }.must_raise(Tomlrb::ParseError)
   end
 
-  # TODO
-  # it "raises an error when parsing a float with leading 0, even in exponent" do
-  #   proc { Tomlrb.parse('x = 01.2') }.must_raise(Tomlrb::ParseError)
-  # end
+  it "raises an error when parsing a float with leading 0, even in exponent" do
+    _{ Tomlrb.parse('x = 01.2') }.must_raise(Tomlrb::ParseError)
+  end
 end
 
 class TomlExamples
