@@ -1,4 +1,4 @@
-require 'minitest_helper' 
+require 'minitest_helper'
 describe Tomlrb::Parser do
   it "parses a toml example file" do
     parsed_file = Tomlrb.load_file('./test/example.toml')
