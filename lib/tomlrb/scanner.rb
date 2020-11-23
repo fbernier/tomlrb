@@ -23,7 +23,7 @@ module Tomlrb
     BIN_INTEGER = /0b[01][01_]*/
     TRUE   = /true/
     FALSE  = /false/
-                                                       
+
     def initialize(io)
       @ss = StringScanner.new(io.read)
       @eos = false
