@@ -30,6 +30,12 @@ rule
     ;
   table_identifier
     : table_identifier '.' table_identifier_component { @handler.push(val[2]) }
+    | table_identifier '.' FLOAT { val[2].split('.').each { |k| @handler.push(k) } }
+    | FLOAT {
+      keys = val[0].split('.')
+      @handler.start_(:table)
+      keys.each { |key| @handler.push(key) }
+    }
     | table_identifier_component { @handler.push(val[0]) }
     ;
   table_identifier_component
