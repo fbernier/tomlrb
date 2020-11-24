@@ -1,3 +1,11 @@
+### 2.0.0 - Unreleased
+
+* Conform to TOML v1.0.0-rc3
+
+#### Breanking Changes ####
+
+TOML v0.5.0 introduced new value types: Local Date-Time, Local Date and Local Time which represent time without time zone information. Tomlrb also introduced correspondent classes since v2.0.0. By this change, some table values such as `2020-11-24T20:32:18`, `2020-11-24` or `20:32:18` are not treated as strings but as new classes `Tomlrb::LocalDateTime`, `Tomlrb::LocalDate` or `Tomlrb::LocalTime`. You can get the string values it were by `#to_s` method of those classes. Additionally, You can also get `Time` objects by `#to_time`. See [API documentation](https://www.rubydoc.info/gems/tomlrb) for the methods' details.
+
 ### 1.3.0 - 2020-03-19
 
 * Fix error with falsy table values
