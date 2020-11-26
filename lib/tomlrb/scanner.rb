@@ -10,9 +10,7 @@ module Tomlrb
     STRING_MULTI = /"{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?(?<!\\)"{3,5})/m
     STRING_LITERAL = /(['])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/
     STRING_LITERAL_MULTI = /'{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?'{3,5})/m
-    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})/i
-    LOCAL_DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/i
-    LOCAL_DATE = /(-?\d{4})-(\d{2})-(\d{2})/
+    DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
     LOCAL_TIME = /(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/
     FLOAT = /[+-]?(?:(?:\d|[1-9](?:_?\d)*)\.\d(?:_?\d)*|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?(?!\w)/
     FLOAT_INF = /[+-]?inf\b/
@@ -33,8 +31,6 @@ module Tomlrb
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime
-      when @ss.scan(LOCAL_DATETIME) then process_local_datetime
-      when @ss.scan(LOCAL_DATE) then process_local_date
       when @ss.scan(LOCAL_TIME) then process_local_time
       when text = @ss.scan(STRING_MULTI) then [:STRING_MULTI, text[3..-4]]
       when text = @ss.scan(STRING_BASIC) then [:STRING_BASIC, text[1..-2]]
@@ -57,18 +53,8 @@ module Tomlrb
       if @ss[7]
         offset = @ss[7].gsub('Z', '+00:00')
       end
-      args = [@ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f, offset]
+      args = [@ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6], offset]
       [:DATETIME, args]
-    end
-
-    def process_local_datetime
-      args = [@ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f]
-      [:LOCAL_DATETIME, args]
-    end
-
-    def process_local_date
-      args = [@ss[1], @ss[2], @ss[3]]
-      [:LOCAL_DATE, args]
     end
 
     def process_local_time
