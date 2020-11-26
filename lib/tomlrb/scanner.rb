@@ -54,9 +54,7 @@ module Tomlrb
     end
 
     def process_datetime
-      if @ss[7].nil?
-        offset = '+00:00'
-      else
+      if @ss[7]
         offset = @ss[7].gsub('Z', '+00:00')
       end
       args = [@ss[1], @ss[2], @ss[3], @ss[4] || 0, @ss[5] || 0, @ss[6].to_f, offset]
