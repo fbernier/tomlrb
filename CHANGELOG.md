@@ -1,4 +1,4 @@
-### 2.0.0 - Unreleased
+### 2.0.0 - 2020-11-26
 
 * Conform to TOML v1.0.0-rc3
 
