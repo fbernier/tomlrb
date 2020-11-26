@@ -27,7 +27,6 @@ module Tomlrb
 
     def next_token
       case
-      when @ss.eos? then process_eos
       when @ss.scan(NEWLINE) then [:NEWLINE, nil]
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
@@ -45,6 +44,7 @@ module Tomlrb
       when text = @ss.scan(TRUE)   then [:TRUE, text]
       when text = @ss.scan(FALSE)  then [:FALSE, text]
       when text = @ss.scan(IDENTIFIER) then [:IDENTIFIER, text]
+      when @ss.eos? then process_eos
       else x = @ss.getch; [x, x]
       end
     end
