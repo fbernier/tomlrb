@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE EOS
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE EOS
 rule
   expressions
     | expressions expression
@@ -44,9 +44,7 @@ rule
     | STRING_BASIC
     | STRING_LITERAL
     | INTEGER
-    | HEX_INTEGER
-    | OCT_INTEGER
-    | BIN_INTEGER
+    | NON_DEC_INTEGER
     | FLOAT_INF
     | FLOAT_NAN
     | TRUE
@@ -112,9 +110,7 @@ rule
     | STRING_BASIC
     | STRING_LITERAL
     | INTEGER
-    | HEX_INTEGER
-    | OCT_INTEGER
-    | BIN_INTEGER
+    | NON_DEC_INTEGER
     | FLOAT_INF
     | FLOAT_NAN
     | TRUE
@@ -151,9 +147,14 @@ rule
     | FLOAT_INF { result = (val[0][0] == '-' ? -1 : 1) * Float::INFINITY }
     | FLOAT_NAN { result = Float::NAN }
     | INTEGER { result = val[0].to_i }
-    | HEX_INTEGER { result = val[0].to_i(16) }
-    | OCT_INTEGER { result = val[0].to_i(8) }
-    | BIN_INTEGER { result = val[0].to_i(2) }
+    | NON_DEC_INTEGER {
+      base = case val[0][1]
+             when "x" then 16
+             when "o" then 8
+             when "b" then 2
+             end
+      result = val[0].to_i(base)
+    }
     | TRUE   { result = true }
     | FALSE  { result = false }
     | DATETIME { result = Time.new(*val[0])}
