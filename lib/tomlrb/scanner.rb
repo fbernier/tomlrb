@@ -5,7 +5,7 @@ module Tomlrb
     COMMENT = /#[^\u0000-\u0008\u000A-\u001F\u007F]*/
     IDENTIFIER = /[A-Za-z0-9_-]+/
     SPACE = /[ \t]/
-    NEWLINE = /(\r?\n)/
+    NEWLINE = /[ \t]*(?:\r?\n)+[ \t]*/
     STRING_BASIC = /(["])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/
     STRING_MULTI = /"{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?(?<!\\)"{3,5})/m
     STRING_LITERAL = /(['])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/
@@ -28,6 +28,7 @@ module Tomlrb
     def next_token
       case
       when @ss.eos? then process_eos
+      when @ss.scan(NEWLINE) then [:NEWLINE, nil]
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime
@@ -43,7 +44,6 @@ module Tomlrb
       when text = @ss.scan(NON_DEC_INTEGER) then [:NON_DEC_INTEGER, text]
       when text = @ss.scan(TRUE)   then [:TRUE, text]
       when text = @ss.scan(FALSE)  then [:FALSE, text]
-      when text = @ss.scan(NEWLINE) then [:NEWLINE, text]
       when text = @ss.scan(IDENTIFIER) then [:IDENTIFIER, text]
       else x = @ss.getch; [x, x]
       end
