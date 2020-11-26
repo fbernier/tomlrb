@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD TRUE FALSE NEWLINE EOS
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD BOOLEAN NEWLINE EOS
 rule
   expressions
     | expressions expression
@@ -46,8 +46,7 @@ rule
     | INTEGER
     | NON_DEC_INTEGER
     | FLOAT_KEYWORD
-    | TRUE
-    | FALSE
+    | BOOLEAN
     ;
   inline_table
     : inline_table_start inline_table_end
@@ -111,8 +110,7 @@ rule
     | INTEGER
     | NON_DEC_INTEGER
     | FLOAT_KEYWORD
-    | TRUE
-    | FALSE
+    | BOOLEAN
     ;
   array
     : start_array array_continued
@@ -158,8 +156,7 @@ rule
              end
       result = val[0].to_i(base)
     }
-    | TRUE   { result = true }
-    | FALSE  { result = false }
+    | BOOLEAN { result = val[0] == 'true' ? true : false }
     | DATETIME {
       v = val[0]
       result = if v[6].nil?

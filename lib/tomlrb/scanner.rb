@@ -16,8 +16,7 @@ module Tomlrb
     FLOAT_KEYWORD = /[+-]?(?:inf|nan)\b/
     INTEGER = /[+-]?([1-9](_?\d)*|0)(?![A-Za-z0-9_-]+)/
     NON_DEC_INTEGER = /0(?:x[0-9A-Fa-f][0-9A-Fa-f_]*|o[0-7][0-7_]*|b[01][01_]*)/
-    TRUE   = /true/
-    FALSE  = /false/
+    BOOLEAN = /true|false/
 
     def initialize(io)
       @ss = StringScanner.new(io.read)
@@ -39,8 +38,7 @@ module Tomlrb
       when text = @ss.scan(FLOAT_KEYWORD) then [:FLOAT_KEYWORD, text]
       when text = @ss.scan(INTEGER) then [:INTEGER, text]
       when text = @ss.scan(NON_DEC_INTEGER) then [:NON_DEC_INTEGER, text]
-      when text = @ss.scan(TRUE)   then [:TRUE, text]
-      when text = @ss.scan(FALSE)  then [:FALSE, text]
+      when text = @ss.scan(BOOLEAN) then [:BOOLEAN, text]
       when text = @ss.scan(IDENTIFIER) then [:IDENTIFIER, text]
       when @ss.eos? then process_eos
       else x = @ss.getch; [x, x]
