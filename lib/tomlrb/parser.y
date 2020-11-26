@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE EOS
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD TRUE FALSE NEWLINE EOS
 rule
   expressions
     | expressions expression
@@ -45,8 +45,7 @@ rule
     | STRING_LITERAL
     | INTEGER
     | NON_DEC_INTEGER
-    | FLOAT_INF
-    | FLOAT_NAN
+    | FLOAT_KEYWORD
     | TRUE
     | FALSE
     ;
@@ -111,8 +110,7 @@ rule
     | STRING_LITERAL
     | INTEGER
     | NON_DEC_INTEGER
-    | FLOAT_INF
-    | FLOAT_NAN
+    | FLOAT_KEYWORD
     | TRUE
     | FALSE
     ;
@@ -143,8 +141,14 @@ rule
     ;
   literal
     | FLOAT { result = val[0].to_f }
-    | FLOAT_INF { result = (val[0][0] == '-' ? -1 : 1) * Float::INFINITY }
-    | FLOAT_NAN { result = Float::NAN }
+    | FLOAT_KEYWORD {
+      v = val[0]
+      result = if v.end_with?('nan')
+                 Float::NAN
+               else
+                 (v[0] == '-' ? -1 : 1) * Float::INFINITY
+               end
+    }
     | INTEGER { result = val[0].to_i }
     | NON_DEC_INTEGER {
       base = case val[0][1]

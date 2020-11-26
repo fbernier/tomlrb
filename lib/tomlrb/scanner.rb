@@ -13,8 +13,7 @@ module Tomlrb
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
     LOCAL_TIME = /(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/
     FLOAT = /[+-]?(?:(?:\d|[1-9](?:_?\d)*)\.\d(?:_?\d)*|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?(?!\w)/
-    FLOAT_INF = /[+-]?inf\b/
-    FLOAT_NAN = /[+-]?nan\b/
+    FLOAT_KEYWORD = /[+-]?(?:inf|nan)\b/
     INTEGER = /[+-]?([1-9](_?\d)*|0)(?![A-Za-z0-9_-]+)/
     NON_DEC_INTEGER = /0(?:x[0-9A-Fa-f][0-9A-Fa-f_]*|o[0-7][0-7_]*|b[01][01_]*)/
     TRUE   = /true/
@@ -37,8 +36,7 @@ module Tomlrb
       when text = @ss.scan(STRING_LITERAL_MULTI) then [:STRING_LITERAL_MULTI, text[3..-4]]
       when text = @ss.scan(STRING_LITERAL) then [:STRING_LITERAL, text[1..-2]]
       when text = @ss.scan(FLOAT) then [:FLOAT, text]
-      when text = @ss.scan(FLOAT_INF) then [:FLOAT_INF, text]
-      when text = @ss.scan(FLOAT_NAN) then [:FLOAT_NAN, text]
+      when text = @ss.scan(FLOAT_KEYWORD) then [:FLOAT_KEYWORD, text]
       when text = @ss.scan(INTEGER) then [:INTEGER, text]
       when text = @ss.scan(NON_DEC_INTEGER) then [:NON_DEC_INTEGER, text]
       when text = @ss.scan(TRUE)   then [:TRUE, text]
