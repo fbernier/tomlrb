@@ -27,7 +27,7 @@ module Tomlrb
     end
 
     def ==(other)
-      other.respond_to?(:to_time) &&
+      other.kind_of?(self.class) &&
         @time == other.to_time(0, 1, 1)
     end
 
