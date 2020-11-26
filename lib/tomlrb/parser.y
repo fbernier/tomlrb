@@ -128,7 +128,6 @@ rule
     : ']' { array = @handler.end_(:array); @handler.push(array) }
     | ',' array_continued
     | NEWLINE array_continued
-    | ',' NEWLINE array_continued
     ;
   start_array
     : '[' { @handler.start_(:array) }
