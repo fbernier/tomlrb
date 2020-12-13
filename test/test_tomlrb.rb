@@ -57,6 +57,10 @@ describe Tomlrb::Parser do
   it "raises an error when parsing a float with leading 0, even in exponent" do
     _{ Tomlrb.parse('x = 01.2') }.must_raise(Tomlrb::ParseError)
   end
+
+  it "raises an error when parsing table and others in a single line" do
+    _{ Tomlrb.parse('[table] key = "value"') }.must_raise(Tomlrb::ParseError)
+  end
 end
 
 class TomlExamples
