@@ -12,7 +12,8 @@ rule
     | NEWLINE
     ;
   table
-    : table_start table_continued
+    : table_start table_continued NEWLINE
+    | table_start table_continued EOS
     ;
   table_start
     : '[' '[' { @handler.start_(:array_of_tables) }
