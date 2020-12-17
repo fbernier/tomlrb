@@ -125,6 +125,7 @@ module Tomlrb
         end
       end
 
+      current.clear_children if is_array_of_tables
       current
     end
 
@@ -189,6 +190,10 @@ module Tomlrb
       validate_path_already_declared_as_different_type(type, declared, existed)
       validate_already_declared_as_same_key(declared, existed)
       @children[key] = existed || self.class.new(key, type, declared)
+    end
+
+    def clear_children
+      @children.clear
     end
 
     private
