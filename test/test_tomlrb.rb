@@ -25,6 +25,11 @@ describe Tomlrb::Parser do
     _(parsed_file).must_equal TomlExamples.inf_in_keys_example
   end
 
+  it "parses nested array of tables" do
+    parsed_file = Tomlrb.load_file('./test/nested_array_of_tables.toml')
+    _(parsed_file).must_equal TomlExamples.nested_array_of_tables
+  end
+
   it "raises an error when defining a table with the same name as an already established array" do
     _{ Tomlrb.load_file('./test/error.toml') }.must_raise(Tomlrb::ParseError)
   end
@@ -134,6 +139,32 @@ class TomlExamples
       "key1"=>{"inf"=>"something"},
       "key2"=>{"inf"=>{}},
       "nan"=>{"inf"=>{}}
+    }
+  end
+
+  def self.nested_array_of_tables
+    {
+      "fruit"=>
+      [
+        {
+          "name" => "apple",
+          "physical" => {
+            "color" => "red",
+            "shape" => "round"
+          },
+          "variety" => [
+            {"name" => "red delicious"},
+            {"name" => "granny smith"}
+          ]
+        },
+        {
+          "name" => "banana",
+          "physical" => {"shape" => "long"},
+          "variety" => [
+            {"name" => "plantain"}
+          ]
+        }
+      ]
     }
   end
 end
