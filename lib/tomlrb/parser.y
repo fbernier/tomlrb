@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_DATETIME LOCAL_DATE LOCAL_TIME INTEGER HEX_INTEGER OCT_INTEGER BIN_INTEGER FLOAT FLOAT_INF FLOAT_NAN TRUE FALSE NEWLINE EOS
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD BOOLEAN NEWLINE EOS
 rule
   expressions
     | expressions expression
@@ -44,13 +44,9 @@ rule
     | STRING_BASIC
     | STRING_LITERAL
     | INTEGER
-    | HEX_INTEGER
-    | OCT_INTEGER
-    | BIN_INTEGER
-    | FLOAT_INF
-    | FLOAT_NAN
-    | TRUE
-    | FALSE
+    | NON_DEC_INTEGER
+    | FLOAT_KEYWORD
+    | BOOLEAN
     ;
   inline_table
     : inline_table_start inline_table_end
@@ -112,13 +108,9 @@ rule
     | STRING_BASIC
     | STRING_LITERAL
     | INTEGER
-    | HEX_INTEGER
-    | OCT_INTEGER
-    | BIN_INTEGER
-    | FLOAT_INF
-    | FLOAT_NAN
-    | TRUE
-    | FALSE
+    | NON_DEC_INTEGER
+    | FLOAT_KEYWORD
+    | BOOLEAN
     ;
   array
     : start_array array_continued
@@ -132,7 +124,6 @@ rule
     : ']' { array = @handler.end_(:array); @handler.push(array) }
     | ',' array_continued
     | NEWLINE array_continued
-    | ',' NEWLINE array_continued
     ;
   start_array
     : '[' { @handler.start_(:array) }
@@ -148,17 +139,36 @@ rule
     ;
   literal
     | FLOAT { result = val[0].to_f }
-    | FLOAT_INF { result = (val[0][0] == '-' ? -1 : 1) * Float::INFINITY }
-    | FLOAT_NAN { result = Float::NAN }
+    | FLOAT_KEYWORD {
+      v = val[0]
+      result = if v.end_with?('nan')
+                 Float::NAN
+               else
+                 (v[0] == '-' ? -1 : 1) * Float::INFINITY
+               end
+    }
     | INTEGER { result = val[0].to_i }
-    | HEX_INTEGER { result = val[0].to_i(16) }
-    | OCT_INTEGER { result = val[0].to_i(8) }
-    | BIN_INTEGER { result = val[0].to_i(2) }
-    | TRUE   { result = true }
-    | FALSE  { result = false }
-    | DATETIME { result = Time.new(*val[0])}
-    | LOCAL_DATETIME { result = LocalDateTime.new(*val[0]) }
-    | LOCAL_DATE { result = LocalDate.new(*val[0]) }
+    | NON_DEC_INTEGER {
+      base = case val[0][1]
+             when "x" then 16
+             when "o" then 8
+             when "b" then 2
+             end
+      result = val[0].to_i(base)
+    }
+    | BOOLEAN { result = val[0] == 'true' ? true : false }
+    | DATETIME {
+      v = val[0]
+      result = if v[6].nil?
+                 if v[4].nil?
+                   LocalDate.new(v[0], v[1], v[2])
+                 else
+                   LocalDateTime.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f)
+                 end
+               else
+                 Time.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f, v[6])
+               end
+    }
     | LOCAL_TIME { result = LocalTime.new(*val[0]) }
     ;
   string

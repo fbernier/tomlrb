@@ -46,14 +46,15 @@ Here are the results on my machine:
 ```
 Warming up --------------------------------------
       emancu/toml-rb     1.000  i/100ms
-     fbernier/tomlrb    17.000  i/100ms
+     fbernier/tomlrb    40.000  i/100ms
 Calculating -------------------------------------
-      emancu/toml-rb     10.630  (±28.2%) i/s -     49.000  in   5.035997s
-     fbernier/tomlrb    181.585  (±24.8%) i/s -    850.000  in   5.019273s
+      emancu/toml-rb     17.515  (± 5.7%) i/s -     88.000  in   5.055333s
+     fbernier/tomlrb    390.779  (± 5.1%) i/s -      1.960k in   5.028938s
 
 Comparison:
-     fbernier/tomlrb:      181.6 i/s
-      emancu/toml-rb:       10.6 i/s - 17.08x  (± 0.00) slower
+     fbernier/tomlrb:      390.8 i/s
+      emancu/toml-rb:       17.5 i/s - 22.31x  (± 0.00) slower
+
 ```
 
 ## Development
