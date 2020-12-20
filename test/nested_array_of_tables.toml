@@ -1,0 +1,21 @@
+[[fruit]]
+  name = "apple"
+
+  [fruit.physical]
+    color = "red"
+    shape = "round"
+
+  [[fruit.variety]]
+    name = "red delicious"
+
+  [[fruit.variety]]
+    name = "granny smith"
+
+[[fruit]]
+  name = "banana"
+
+  [fruit.physical]
+    shape = "long"
+
+  [[fruit.variety]]
+    name = "plantain"
