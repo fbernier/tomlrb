@@ -1,3 +1,8 @@
+### 2.0.1 - 2020-12-20
+
+* Fix error with table nested under array-of-tables
+* Some performance improvements
+
 ### 2.0.0 - 2020-11-26
 
 * Conform to TOML v1.0.0-rc3
