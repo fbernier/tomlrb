@@ -4,7 +4,7 @@ module Tomlrb
   class LocalDate
     extend Forwardable
 
-    def_delegators :@time, :year, :month, :day
+    def_delegators :@time, :year, :month, :day, :strftime
 
     def initialize(year, month, day)
       @time = Time.new(year, month, day, 0, 0, 0, '-00:00')

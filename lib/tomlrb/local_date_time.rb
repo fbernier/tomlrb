@@ -4,7 +4,7 @@ module Tomlrb
   class LocalDateTime
     extend Forwardable
 
-    def_delegators :@time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
+    def_delegators :@time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec, :strftime
 
     def initialize(year, month, day, hour, min, sec) # rubocop:disable Metrics/ParameterLists
       @time = Time.new(year, month, day, hour, min, sec, '-00:00')

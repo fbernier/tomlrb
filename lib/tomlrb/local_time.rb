@@ -4,7 +4,7 @@ module Tomlrb
   class LocalTime
     extend Forwardable
 
-    def_delegators :@time, :hour, :min, :sec, :usec, :nsec
+    def_delegators :@time, :hour, :min, :sec, :usec, :nsec, :strftime
 
     def initialize(hour, min, sec)
       @time = Time.new(0, 1, 1, hour, min, sec, '-00:00')
