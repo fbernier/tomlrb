@@ -77,7 +77,7 @@ def load_json(path)
 end
 
 def load_yaml(path)
-  data = YAML.load_file(path.to_path)
+  data = YAML.load(path.read, permitted_classes: [Time])
   local_path = path.parent.basename/path.basename
   if EXPONENTIAL_NOTATIONS.include? local_path.to_path
     data = data.each_with_object({}) {|(key, value), table|
