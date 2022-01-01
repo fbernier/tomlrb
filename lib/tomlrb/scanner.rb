@@ -19,8 +19,7 @@ module Tomlrb
     BOOLEAN = /true|false/
 
     def initialize(io)
-      data = io.read
-      @ss = StringScanner.new(data)
+      @ss = StringScanner.new(io.read)
       @eos = false
     end
 
