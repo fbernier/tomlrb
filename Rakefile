@@ -1,3 +1,7 @@
+# To avoid stack level too deep error on loading
+# toml-spec-tests/values/qa-table-inline-nested-1000.yaml
+ENV["RUBY_THREAD_VM_STACK_SIZE"] = "1100000"
+
 require "bundler/gem_tasks"
 require 'rake/testtask'
 
