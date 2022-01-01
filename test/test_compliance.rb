@@ -28,7 +28,7 @@ describe Tomlrb::Parser do
   tests_dir = File.join(__dir__, '../toml-spec-tests')
   Pathname.glob("#{tests_dir}/values/*.toml").each do |toml_path|
     toml_path = toml_path.expand_path
-    local_path = toml_path.parent.basename/toml_path.basename
+    local_path = toml_path.relative_path_from(File.join(__dir__, ".."))
 
     it "parses #{local_path}" do
       actual = Tomlrb.load_file(toml_path.to_path)
@@ -46,7 +46,7 @@ describe Tomlrb::Parser do
 
   Pathname.glob("#{tests_dir}/errors/*.toml").each do |toml_path|
     toml_path = toml_path.expand_path
-    local_path = toml_path.parent.basename/toml_path.basename
+    local_path = toml_path.relative_path_from(File.join(__dir__, ".."))
 
     it "raises an error on parsing #{local_path}" do
       _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError
