@@ -17,4 +17,6 @@ Gem::Specification.new do |spec|
   spec.files         = %w{LICENSE.txt} + Dir.glob("lib/**/*", File::FNM_DOTMATCH).reject { |f| File.directory?(f) }
   spec.require_paths = ["lib"]
   spec.required_ruby_version = '>= 2.0'
+
+  spec.add_development_dependency "psych", "~> 4"
 end
