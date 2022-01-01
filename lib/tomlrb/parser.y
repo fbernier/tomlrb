@@ -128,18 +128,12 @@ rule
     : start_array array_continued
     ;
   array_continued
-    : ']' { 
-      array = @handler.end_(:array)
-      @handler.push(array.compact) 
-    }
+    : ']' { array = @handler.end_(:array); @handler.push(array.compact) }
     | value array_next
     | NEWLINE array_continued
     ;
   array_next
-    : ']' { 
-      array = @handler.end_(:array)
-      @handler.push(array.compact) 
-    }
+    : ']' { array = @handler.end_(:array); @handler.push(array.compact) }
     | ',' array_continued
     | NEWLINE array_continued
     ;
