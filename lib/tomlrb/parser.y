@@ -41,7 +41,7 @@ rule
     ;
   table_identifier_component
     : IDENTIFIER
-    | STRING_BASIC
+    | STRING_BASIC { result = StringUtils.replace_escaped_chars(val[0]) }
     | STRING_LITERAL
     | INTEGER
     | NON_DEC_INTEGER
@@ -58,38 +58,50 @@ rule
   inline_table_end
     : '}' {
       array = @handler.end_(:inline)
-      array.map!.with_index{ |n,i| i.even? ? n.to_sym : n } if @handler.symbolize_keys
-      @handler.push(Hash[*array])
+      @handler.push_inline(array)
     }
     ;
   inline_continued
-    : inline_assignment_key inline_assignment_value
-    | inline_assignment_key inline_assignment_value inline_next
+    : inline_assignment
+    | inline_assignment inline_next
     ;
   inline_next
     : ',' inline_continued
     ;
-  inline_assignment_key
-    : inline_assignment_key '.' IDENTIFIER {
-      array = @handler.end_(:inline)
-      array.each { |key| @handler.push(key) }
-      @handler.start_(:inline)
-      @handler.push(val[2])
+  inline_assignment
+    : inline_assignment_key '=' value {
+      keys = @handler.end_(:inline_keys)
+      @handler.push(keys)
     }
-    | IDENTIFIER { @handler.push(val[0]) }
     ;
-  inline_assignment_value
-    : '=' value
+  inline_assignment_key
+    : inline_assignment_key '.' assignment_key_component { 
+      @handler.push(val[2]) 
+    }
+    | inline_assignment_key '.' FLOAT { val[2].split('.').each { |k| @handler.push(k) } }
+    | FLOAT {
+      keys = val[0].split('.')
+      @handler.start_(:inline_keys)
+      keys.each { |key| @handler.push(key) }
+    }
+    | assignment_key_component { 
+      @handler.start_(:inline_keys) 
+      @handler.push(val[0]) 
+    }
     ;
   assignment
     : assignment_key '=' value EOS {
       keys = @handler.end_(:keys)
-      @handler.push(keys.pop)
+      value = keys.pop
+      @handler.validate_value(value)
+      @handler.push(value)
       @handler.assign(keys)
     }
     | assignment_key '=' value NEWLINE {
       keys = @handler.end_(:keys)
-      @handler.push(keys.pop)
+      value = keys.pop
+      @handler.validate_value(value)
+      @handler.push(value)
       @handler.assign(keys)
     }
     ;
@@ -105,7 +117,7 @@ rule
     ;
   assignment_key_component
     : IDENTIFIER
-    | STRING_BASIC
+    | STRING_BASIC { result = StringUtils.replace_escaped_chars(val[0]) }
     | STRING_LITERAL
     | INTEGER
     | NON_DEC_INTEGER
@@ -116,12 +128,18 @@ rule
     : start_array array_continued
     ;
   array_continued
-    : ']' { array = @handler.end_(:array); @handler.push(array) }
+    : ']' { 
+      array = @handler.end_(:array)
+      @handler.push(array.compact) 
+    }
     | value array_next
     | NEWLINE array_continued
     ;
   array_next
-    : ']' { array = @handler.end_(:array); @handler.push(array) }
+    : ']' { 
+      array = @handler.end_(:array)
+      @handler.push(array.compact) 
+    }
     | ',' array_continued
     | NEWLINE array_continued
     ;

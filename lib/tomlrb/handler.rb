@@ -21,7 +21,6 @@ module Tomlrb
         identifierz.each do |k|
           k = k.to_sym if @symbolize_keys
           if @current[k].is_a?(Array)
-            @current[k] << {} if @current[k].empty?
             @current = @current[k].last
           else
             @current[k] ||= {}
@@ -32,7 +31,10 @@ module Tomlrb
     end
 
     def deal_with_array_of_tables(identifiers, is_array_of_tables)
-      identifiers.map!{|n| n.gsub("\"", '')}
+      if identifiers.empty?
+        raise ParseError, 'Array needs a name'
+      end
+
       stringified_identifier = identifiers.join('.')
 
       if is_array_of_tables
@@ -66,6 +68,28 @@ module Tomlrb
       @stack << o
     end
 
+    def push_inline(inline_arrays)
+      merged_inline = {}
+
+      inline_arrays.each do |inline_array|
+        current = merged_inline
+        value = inline_array.pop
+        last_key = nil
+        inline_array.each_with_index do |inline_key, inline_index|
+          last_piece = inline_index == inline_array.size - 1
+          
+          if last_piece
+            current[inline_key] = value
+          else
+            current[inline_key] ||= {}
+            current = current[inline_key]
+          end
+        end
+      end
+
+      push(merged_inline)
+    end
+
     def start_(type)
       push([type])
     end
@@ -73,16 +97,23 @@ module Tomlrb
     def end_(type)
       array = []
       while (value = @stack.pop) != [type]
-        raise ParseError, 'Unclosed table' if value.nil?
+        raise ParseError, 'Unclosed table' if @stack.empty?
         array.unshift(value)
       end
       array
+    end
+
+    def validate_value(value)
+      if value.nil?
+        raise ParseError, 'Value must be present'
+      end
     end
 
     private
 
     def assign_key_path(current, key, key_emptied)
       if key_emptied
+
         raise ParseError, "Cannot overwrite value with key #{key}" unless current.kind_of?(Hash)
         current[key] = @stack.pop
         return current
