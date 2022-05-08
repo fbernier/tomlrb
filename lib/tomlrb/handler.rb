@@ -74,11 +74,10 @@ module Tomlrb
       inline_arrays.each do |inline_array|
         current = merged_inline
         value = inline_array.pop
-        last_key = nil
         inline_array.each_with_index do |inline_key, inline_index|
-          last_piece = inline_index == inline_array.size - 1
+          last_key = inline_index == inline_array.size - 1
 
-          if last_piece
+          if last_key
             if current[inline_key].nil?
               current[inline_key] = value
             else
@@ -191,7 +190,7 @@ module Tomlrb
 
     def find_or_create_first_pair_key(current, key, declared, table_keys_empty)
       existed = current[key]
-      if existed && existed.declared? && (existed.type == :pair) && declared && table_keys_empty
+      if existed && (existed.type == :pair) && declared && table_keys_empty
         raise Key::KeyConflict, "Key #{key} is already used"
       end
       k = Key.new(key, :pair, declared)
