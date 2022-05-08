@@ -233,7 +233,7 @@ module Tomlrb
     private
 
     def validate_already_declared_as_different_key(type, declared, existed)
-      if declared && existed && existed.declared? && existed.type != type
+      if existed && existed.declared? && existed.type != type
         raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
     end
