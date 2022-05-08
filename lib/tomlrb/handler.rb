@@ -13,6 +13,10 @@ module Tomlrb
     end
 
     def set_context(identifiers, is_array_of_tables: false)
+      if identifiers.empty?
+        raise ParseError, 'Array needs a name'
+      end
+
       @current_table = identifiers.dup
       @keys.add_table_key identifiers, is_array_of_tables
       @current = @output
@@ -31,10 +35,6 @@ module Tomlrb
     end
 
     def deal_with_array_of_tables(identifiers, is_array_of_tables)
-      if identifiers.empty?
-        raise ParseError, 'Array needs a name'
-      end
-
       stringified_identifier = identifiers.join('.')
 
       if is_array_of_tables
