@@ -17,6 +17,9 @@ module Tomlrb
     INTEGER = /[+-]?([1-9](_?\d)*|0)(?![A-Za-z0-9_-]+)/
     NON_DEC_INTEGER = /0(?:x[0-9A-Fa-f]+(?:_[0-9A-Fa-f])*[0-9A-Fa-f]*|o[0-7]+(?:_[0-7])*[0-7]*|b[01]+(?:_[01])*[01]*)/
     BOOLEAN = /true|false/
+    SPACED_ARRAY_OF_TABLES_START = /^\[[ \t]+\[(#{IDENTIFIER}|#{STRING_BASIC}|#{STRING_LITERAL}|#{INTEGER}|#{NON_DEC_INTEGER}|#{FLOAT_KEYWORD}|#{BOOLEAN})\]\]$/
+    SPACED_ARRAY_OF_TABLES_END = /^\[\[(#{IDENTIFIER}|#{STRING_BASIC}|#{STRING_LITERAL}|#{INTEGER}|#{NON_DEC_INTEGER}|#{FLOAT_KEYWORD}|#{BOOLEAN})\][ \t]+\]$/
+    SPACED_ARRAY_OF_TABLES_BOTH = /^\[[ \t]+\[(#{IDENTIFIER}|#{STRING_BASIC}|#{STRING_LITERAL}|#{INTEGER}|#{NON_DEC_INTEGER}|#{FLOAT_KEYWORD}|#{BOOLEAN})\][ \t]+\]$/
 
     def initialize(io)
       @ss = StringScanner.new(io.read)
@@ -26,6 +29,9 @@ module Tomlrb
     def next_token
       case
       when @ss.scan(NEWLINE) then [:NEWLINE, nil]
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_START) then raise ParseError.new("Array of tables has spaces in starting brackets")
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_END) then raise ParseError.new("Array of tables has spaces in ending brackets")
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_BOTH) then raise ParseError.new("Array of tables has spaces in starting and ending brackets")
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime
