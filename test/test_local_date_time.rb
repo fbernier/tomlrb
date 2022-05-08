@@ -4,7 +4,7 @@ require 'tomlrb/local_date'
 require 'tomlrb/local_time'
 
 def time_knows_zone_names?
-  RUBY_VERSION >= '2.7.0' && !RUBY_VERSION.include?('truffle')
+  RUBY_VERSION >= '2.7.0' && RUBY_ENGINE != 'truffleruby'
 end
 
 describe Tomlrb::LocalDateTime do
