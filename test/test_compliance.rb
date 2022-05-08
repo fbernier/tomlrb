@@ -133,7 +133,8 @@ def load_json(path)
 end
 
 def load_yaml(path)
-  data = YAML.load_file(path.to_path)
+  content = File.read(path.to_path)
+  data = YAML.respond_to?(:unsafe_load) ? YAML.unsafe_load(content) : YAML.load(content)
   local_path = path.parent.basename/path.basename
   if EXPONENTIAL_NOTATIONS.include? local_path.to_path
     data = data.each_with_object({}) {|(key, value), table|
