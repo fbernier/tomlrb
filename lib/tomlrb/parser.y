@@ -178,6 +178,11 @@ rule
                    LocalDateTime.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f)
                  end
                else
+                 # Patch for 24:00:00 which Ruby parses
+                 if v[3].to_i == 24 && v[4].to_i == 0 && v[5].to_i == 0
+                   v[3] = (v[3].to_i + 1).to_s
+                 end
+
                  Time.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f, v[6])
                end
     }

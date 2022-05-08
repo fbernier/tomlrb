@@ -655,6 +655,11 @@ module_eval(<<'.,.,', 'parser.y', 172)
                    LocalDateTime.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f)
                  end
                else
+                 # Patch for 24:00:00 which Ruby parses
+                 if v[3].to_i == 24 && v[4].to_i == 0 && v[5].to_i == 0
+                   v[3] = (v[3].to_i + 1).to_s
+                 end
+
                  Time.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f, v[6])
                end
 
@@ -662,35 +667,35 @@ module_eval(<<'.,.,', 'parser.y', 172)
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 183)
+module_eval(<<'.,.,', 'parser.y', 188)
   def _reduce_74(val, _values, result)
      result = LocalTime.new(*val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 186)
+module_eval(<<'.,.,', 'parser.y', 191)
   def _reduce_75(val, _values, result)
      result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0]))
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 187)
+module_eval(<<'.,.,', 'parser.y', 192)
   def _reduce_76(val, _values, result)
      result = StringUtils.replace_escaped_chars(val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 188)
+module_eval(<<'.,.,', 'parser.y', 193)
   def _reduce_77(val, _values, result)
      result = StringUtils.strip_spaces(val[0])
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 189)
+module_eval(<<'.,.,', 'parser.y', 194)
   def _reduce_78(val, _values, result)
      result = val[0]
     result
