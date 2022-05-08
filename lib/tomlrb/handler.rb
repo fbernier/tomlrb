@@ -77,9 +77,13 @@ module Tomlrb
         last_key = nil
         inline_array.each_with_index do |inline_key, inline_index|
           last_piece = inline_index == inline_array.size - 1
-          
+
           if last_piece
-            current[inline_key] = value
+            if current[inline_key].nil?
+              current[inline_key] = value
+            else
+              raise Key::KeyConflict, "Inline key #{inline_key} is already used"
+            end
           else
             current[inline_key] ||= {}
             current = current[inline_key]
