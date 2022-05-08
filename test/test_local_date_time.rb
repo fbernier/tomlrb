@@ -3,6 +3,10 @@ require 'tomlrb/local_date_time'
 require 'tomlrb/local_date'
 require 'tomlrb/local_time'
 
+def time_knows_zone_names?
+  RUBY_VERSION >= '2.7.0' && !RUBY_VERSION.include?('truffle')
+end
+
 describe Tomlrb::LocalDateTime do
   subject { Tomlrb::LocalDateTime }
 
@@ -23,7 +27,7 @@ describe Tomlrb::LocalDateTime do
       _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, '+09:00')
     end
 
-    if RUBY_VERSION >= '2.7.0'
+    if time_knows_zone_names?
       it 'can change time zone by name' do
         time = subject.to_time('UTC')
         _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, 'UTC')
@@ -53,7 +57,7 @@ describe Tomlrb::LocalDate do
       _(time).must_equal Time.new(1979, 5, 27, 0, 0, 0, '+09:00')
     end
 
-    if RUBY_VERSION >= '2.7.0'
+    if time_knows_zone_names?
       it 'can change time zone by name' do
         time = subject.to_time('UTC')
         _(time).must_equal Time.new(1979, 5, 27, 0, 0, 0, 'UTC')
@@ -83,7 +87,7 @@ describe Tomlrb::LocalTime do
       _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, '+09:00')
     end
 
-    if RUBY_VERSION >= '2.7.0'
+    if time_knows_zone_names?
       it 'can change time zone with name' do
         time = subject.to_time(1979, 5, 27, 'UTC')
         _(time).must_equal Time.new(1979, 5, 27, 0, 32, 0.999999, 'UTC')
