@@ -103,6 +103,12 @@ def process_json_leaf(node)
       md = frac_and_zone.match(/(?<frac>\d+)(?<zone>.*)/)
       frac = md[:frac]
       zone = md[:zone]
+
+      # Compatibility with Ruby 2.6 and lower
+      if zone == 'Z'
+        zone = '+00:00'
+      end
+
       Time.new(year, month, day, hour, minute, "#{second}.#{frac}".to_f, zone)
     else
       Time.parse(v)
