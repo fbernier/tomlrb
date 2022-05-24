@@ -12,11 +12,14 @@ module Tomlrb
     STRING_LITERAL_MULTI = /'{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?'{3,5})/m
     DATETIME = /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i
     LOCAL_TIME = /(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/
-    FLOAT = /[+-]?(?:(?:\d|[1-9](?:_?\d)*)\.\d(?:_?\d)*|\d+(?=[eE]))(?:[eE][+-]?[0-9_]+)?(?!\w)/
+    FLOAT = /[+-]?(?:(?:\d|[1-9](?:_?\d)*)\.\d(?:_?\d)*|\d+(?=[eE]))(?:[eE][+-]?[0-9]+(_[0-9])*[0-9]*)?(?!\w)/
     FLOAT_KEYWORD = /[+-]?(?:inf|nan)\b/
     INTEGER = /[+-]?([1-9](_?\d)*|0)(?![A-Za-z0-9_-]+)/
-    NON_DEC_INTEGER = /0(?:x[0-9A-Fa-f][0-9A-Fa-f_]*|o[0-7][0-7_]*|b[01][01_]*)/
+    NON_DEC_INTEGER = /0(?:x[0-9A-Fa-f]+(?:_[0-9A-Fa-f])*[0-9A-Fa-f]*|o[0-7]+(?:_[0-7])*[0-7]*|b[01]+(?:_[01])*[01]*)/
     BOOLEAN = /true|false/
+    SPACED_ARRAY_OF_TABLES_START = /^\[[ \t]+\[(#{IDENTIFIER}|#{STRING_BASIC}|#{STRING_LITERAL}|#{INTEGER}|#{NON_DEC_INTEGER}|#{FLOAT_KEYWORD}|#{BOOLEAN})\]\]$/
+    SPACED_ARRAY_OF_TABLES_END = /^\[\[(#{IDENTIFIER}|#{STRING_BASIC}|#{STRING_LITERAL}|#{INTEGER}|#{NON_DEC_INTEGER}|#{FLOAT_KEYWORD}|#{BOOLEAN})\][ \t]+\]$/
+    SPACED_ARRAY_OF_TABLES_BOTH = /^\[[ \t]+\[(#{IDENTIFIER}|#{STRING_BASIC}|#{STRING_LITERAL}|#{INTEGER}|#{NON_DEC_INTEGER}|#{FLOAT_KEYWORD}|#{BOOLEAN})\][ \t]+\]$/
 
     def initialize(io)
       @ss = StringScanner.new(io.read)
@@ -26,6 +29,9 @@ module Tomlrb
     def next_token
       case
       when @ss.scan(NEWLINE) then [:NEWLINE, nil]
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_START) then raise ParseError.new("Array of tables has spaces in starting brackets")
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_END) then raise ParseError.new("Array of tables has spaces in ending brackets")
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_BOTH) then raise ParseError.new("Array of tables has spaces in starting and ending brackets")
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime
@@ -47,7 +53,7 @@ module Tomlrb
 
     def process_datetime
       if @ss[7]
-        offset = @ss[7].gsub('Z', '+00:00')
+        offset = @ss[7].gsub(/[zZ]/, '+00:00')
       end
       args = [@ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6], offset]
       [:DATETIME, args]

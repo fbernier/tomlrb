@@ -13,6 +13,10 @@ module Tomlrb
     end
 
     def set_context(identifiers, is_array_of_tables: false)
+      if identifiers.empty?
+        raise ParseError, 'Array needs a name'
+      end
+
       @current_table = identifiers.dup
       @keys.add_table_key identifiers, is_array_of_tables
       @current = @output
@@ -21,7 +25,6 @@ module Tomlrb
         identifierz.each do |k|
           k = k.to_sym if @symbolize_keys
           if @current[k].is_a?(Array)
-            @current[k] << {} if @current[k].empty?
             @current = @current[k].last
           else
             @current[k] ||= {}
@@ -32,7 +35,6 @@ module Tomlrb
     end
 
     def deal_with_array_of_tables(identifiers, is_array_of_tables)
-      identifiers.map!{|n| n.gsub("\"", '')}
       stringified_identifier = identifiers.join('.')
 
       if is_array_of_tables
@@ -66,6 +68,31 @@ module Tomlrb
       @stack << o
     end
 
+    def push_inline(inline_arrays)
+      merged_inline = {}
+
+      inline_arrays.each do |inline_array|
+        current = merged_inline
+        value = inline_array.pop
+        inline_array.each_with_index do |inline_key, inline_index|
+          last_key = inline_index == inline_array.size - 1
+
+          if last_key
+            if current[inline_key].nil?
+              current[inline_key] = value
+            else
+              raise Key::KeyConflict, "Inline key #{inline_key} is already used"
+            end
+          else
+            current[inline_key] ||= {}
+            current = current[inline_key]
+          end
+        end
+      end
+
+      push(merged_inline)
+    end
+
     def start_(type)
       push([type])
     end
@@ -73,16 +100,23 @@ module Tomlrb
     def end_(type)
       array = []
       while (value = @stack.pop) != [type]
-        raise ParseError, 'Unclosed table' if value.nil?
+        raise ParseError, 'Unclosed table' if @stack.empty?
         array.unshift(value)
       end
       array
+    end
+
+    def validate_value(value)
+      if value.nil?
+        raise ParseError, 'Value must be present'
+      end
     end
 
     private
 
     def assign_key_path(current, key, key_emptied)
       if key_emptied
+
         raise ParseError, "Cannot overwrite value with key #{key}" unless current.kind_of?(Hash)
         current[key] = @stack.pop
         return current
@@ -156,7 +190,7 @@ module Tomlrb
 
     def find_or_create_first_pair_key(current, key, declared, table_keys_empty)
       existed = current[key]
-      if existed && existed.declared? && (existed.type == :pair) && declared && table_keys_empty
+      if existed && (existed.type == :pair) && declared && table_keys_empty
         raise Key::KeyConflict, "Key #{key} is already used"
       end
       k = Key.new(key, :pair, declared)
@@ -199,7 +233,7 @@ module Tomlrb
     private
 
     def validate_already_declared_as_different_key(type, declared, existed)
-      if declared && existed && existed.declared? && existed.type != type
+      if existed && existed.declared? && existed.type != type
         raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
     end
