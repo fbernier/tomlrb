@@ -43,6 +43,11 @@ describe Tomlrb::Parser do
       .must_equal({"table"=>[{"name"=>"name1", "visible"=>true}, {"name"=>"name2", "visible"=>false}]})
   end
 
+  it "symbolizes keys in a inline table if symbolize_keys: true" do
+    _( Tomlrb.parse("table={a=1, b=2}", symbolize_keys: true) )
+      .must_equal({:table=>{:a=>1, :b=>2}})
+  end
+
   it "raises an error when parsing a float with leading underscore" do
     _{ Tomlrb.parse('x = _1.0') }.must_raise(Tomlrb::ParseError)
   end

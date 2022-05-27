@@ -75,6 +75,7 @@ module Tomlrb
         current = merged_inline
         value = inline_array.pop
         inline_array.each_with_index do |inline_key, inline_index|
+          inline_key = inline_key.to_sym if @symbolize_keys
           last_key = inline_index == inline_array.size - 1
 
           if last_key
