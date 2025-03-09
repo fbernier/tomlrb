@@ -29,9 +29,9 @@ module Tomlrb
     def next_token
       case
       when @ss.scan(NEWLINE) then [:NEWLINE, nil]
-      when @ss.scan(SPACED_ARRAY_OF_TABLES_START) then raise ParseError.new("Array of tables has spaces in starting brackets")
-      when @ss.scan(SPACED_ARRAY_OF_TABLES_END) then raise ParseError.new("Array of tables has spaces in ending brackets")
-      when @ss.scan(SPACED_ARRAY_OF_TABLES_BOTH) then raise ParseError.new("Array of tables has spaces in starting and ending brackets")
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_START) then raise ParseError.new('Array of tables has spaces in starting brackets')
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_END) then raise ParseError.new('Array of tables has spaces in ending brackets')
+      when @ss.scan(SPACED_ARRAY_OF_TABLES_BOTH) then raise ParseError.new('Array of tables has spaces in starting and ending brackets')
       when @ss.scan(SPACE) then next_token
       when @ss.scan(COMMENT) then next_token
       when @ss.scan(DATETIME) then process_datetime

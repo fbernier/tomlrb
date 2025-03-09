@@ -162,9 +162,9 @@ rule
     | INTEGER { result = val[0].to_i }
     | NON_DEC_INTEGER {
       base = case val[0][1]
-             when "x" then 16
-             when "o" then 8
-             when "b" then 2
+             when 'x' then 16
+             when 'o' then 8
+             when 'b' then 2
              end
       result = val[0].to_i(base)
     }

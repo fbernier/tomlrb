@@ -1,4 +1,4 @@
-require "tomlrb/generated_parser"
+require 'tomlrb/generated_parser'
 
 class Tomlrb::Parser < Tomlrb::GeneratedParser
 

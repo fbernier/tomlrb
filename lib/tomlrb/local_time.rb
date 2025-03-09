@@ -23,7 +23,7 @@ module Tomlrb
     def to_s
       frac = (@sec - sec)
       frac_str = frac == 0 ? '' : "#{frac.to_s[1..-1]}"
-      @time.strftime("%T") << frac_str
+      @time.strftime('%T') << frac_str
     end
 
     def ==(other)
