@@ -13,11 +13,11 @@ module Tomlrb
     NEWLINE =
       /(?:[ \t]*(?:\r?\n)[ \t]*)+/.freeze
     STRING_BASIC =
-      /(["])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/.freeze
+      /(")(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/.freeze
     STRING_MULTI =
       /"{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?(?<!\\)"{3,5})/m.freeze
     STRING_LITERAL =
-      /(['])(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/.freeze
+      /(')(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/.freeze
     STRING_LITERAL_MULTI =
       /'{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?'{3,5})/m.freeze
     DATETIME =
@@ -31,7 +31,7 @@ module Tomlrb
     INTEGER =
       /[+-]?([1-9](_?\d)*|0)(?![A-Za-z0-9_-]+)/.freeze
     NON_DEC_INTEGER =
-      /0(?:x[0-9A-Fa-f]+(?:_[0-9A-Fa-f])*[0-9A-Fa-f]*|o[0-7]+(?:_[0-7])*[0-7]*|b[01]+(?:_[01])*[01]*)/.freeze
+      /0(?:x[0-9A-Fa-f](_?[0-9A-Fa-f])*|o[0-7](_?[0-7])*|b[01](_?[01])*)/.freeze
     BOOLEAN =
       /true|false/.freeze
     SPACED_ARRAY_OF_TABLES_START =
@@ -72,9 +72,7 @@ module Tomlrb
     end
 
     def process_datetime
-      if @ss[7]
-        offset = @ss[7].gsub(/[zZ]/, '+00:00')
-      end
+      offset = @ss[7].gsub(/[zZ]/, '+00:00') if @ss[7]
       args = [@ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6], offset]
       [:DATETIME, args]
     end
