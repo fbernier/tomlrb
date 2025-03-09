@@ -43,7 +43,7 @@ module Tomlrb
     # By default Ruby sets the external encoding of an IO object to the
     # default external encoding. The default external encoding is set by
     # locale encoding or the interpreter -E option.
-    tmp = File.read(path, :encoding=>'utf-8')
+    tmp = File.read(path, encoding: 'utf-8')
     Tomlrb.parse(tmp, **options)
   end
 end

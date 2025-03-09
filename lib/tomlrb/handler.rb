@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 module Tomlrb
   class Handler
     attr_reader :output, :symbolize_keys
@@ -58,7 +60,7 @@ module Tomlrb
     def assign(k)
       @keys.add_pair_key k, @current_table
       current = @current
-      while key = k.shift
+      while (key = k.shift)
         key = key.to_sym if @symbolize_keys
         current = assign_key_path(current, key, k.empty?)
       end
@@ -102,6 +104,7 @@ module Tomlrb
       array = []
       while (value = @stack.pop) != [type]
         raise ParseError, 'Unclosed table' if @stack.empty?
+
         array.unshift(value)
       end
       array
@@ -117,14 +120,13 @@ module Tomlrb
 
     def assign_key_path(current, key, key_emptied)
       if key_emptied
+        raise ParseError, "Cannot overwrite value with key #{key}" unless current.is_a?(Hash)
 
-        raise ParseError, "Cannot overwrite value with key #{key}" unless current.kind_of?(Hash)
         current[key] = @stack.pop
         return current
       end
       current[key] ||= {}
-      current = current[key]
-      current
+      current[key]
     end
   end
 
@@ -153,10 +155,10 @@ module Tomlrb
     def append_table_keys(current, table_keys, pair_keys_empty, is_array_of_tables)
       table_keys.each_with_index do |key, index|
         declared = (index == table_keys.length - 1) && pair_keys_empty
-        if index == 0
+        if index.zero?
           current = find_or_create_first_table_key(current, key, declared, is_array_of_tables)
         else
-          current = current << [key, :table, declared, is_array_of_tables]
+          current <<= [key, :table, declared, is_array_of_tables]
         end
       end
 
@@ -180,7 +182,7 @@ module Tomlrb
     def append_pair_keys(current, pair_keys, table_keys_empty, is_array_of_tables)
       pair_keys.each_with_index do |key, index|
         declared = index == pair_keys.length - 1
-        if index == 0 && table_keys_empty
+        if index.zero? && table_keys_empty
           current = find_or_create_first_pair_key(current, key, declared, table_keys_empty)
         else
           key = current << [key, :pair, declared, is_array_of_tables]
@@ -233,32 +235,32 @@ module Tomlrb
 
     private
 
-    def validate_already_declared_as_different_key(type, declared, existed)
+    def validate_already_declared_as_different_key(type, _declared, existed)
       if existed && existed.declared? && existed.type != type
         raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
     end
 
     def validate_already_declared_as_non_array_table(type, is_array_of_tables, declared, existed)
-      if declared && type == :table && existed && existed.declared? && ! is_array_of_tables
+      if declared && type == :table && existed && existed.declared? && !is_array_of_tables
         raise KeyConflict, "Key #{existed.key} is already used"
       end
     end
 
     def validate_path_already_created_as_different_type(type, declared, existed)
-      if declared && (type == :table) && existed && (existed.type == :pair) && (! existed.declared?)
+      if declared && (type == :table) && existed && (existed.type == :pair) && !existed.declared?
         raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
     end
 
     def validate_path_already_declared_as_different_type(type, declared, existed)
-      if ! declared && (type == :pair) && existed && (existed.type == :pair) && existed.declared?
+      if !declared && (type == :pair) && existed && (existed.type == :pair) && existed.declared?
         raise KeyConflict, "Key #{key} is already used as #{type} key"
       end
     end
 
     def validate_already_declared_as_same_key(declared, existed)
-      if existed && ! existed.declared? && declared
+      if existed && !existed.declared? && declared
         raise KeyConflict, "Key #{existed.key} is already used as #{existed.type} key"
       end
     end
