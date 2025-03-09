@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'time'
 require 'stringio'
 require 'tomlrb/version'

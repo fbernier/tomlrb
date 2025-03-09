@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'tomlrb/generated_parser'
 
 class Tomlrb::Parser < Tomlrb::GeneratedParser

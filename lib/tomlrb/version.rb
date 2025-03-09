@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 module Tomlrb
-  VERSION = '2.0.3'.freeze
+  VERSION = '2.0.3'
 end
