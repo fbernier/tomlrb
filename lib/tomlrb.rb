@@ -1,13 +1,15 @@
+# frozen-string-literal: true
+
 require 'time'
 require 'stringio'
-require "tomlrb/version"
+require 'tomlrb/version'
 require 'tomlrb/local_date_time'
 require 'tomlrb/local_date'
 require 'tomlrb/local_time'
 require 'tomlrb/string_utils'
-require "tomlrb/scanner"
-require "tomlrb/parser"
-require "tomlrb/handler"
+require 'tomlrb/scanner'
+require 'tomlrb/parser'
+require 'tomlrb/handler'
 
 module Tomlrb
   class ParseError < StandardError; end
@@ -41,7 +43,7 @@ module Tomlrb
     # By default Ruby sets the external encoding of an IO object to the
     # default external encoding. The default external encoding is set by
     # locale encoding or the interpreter -E option.
-    tmp = File.read(path, :encoding=>'utf-8')
+    tmp = File.read(path, encoding: 'utf-8')
     Tomlrb.parse(tmp, **options)
   end
 end

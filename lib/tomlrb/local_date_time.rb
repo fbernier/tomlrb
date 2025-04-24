@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'forwardable'
 
 module Tomlrb
@@ -17,24 +19,24 @@ module Tomlrb
     #   * when +Numeric+, it is time zone offset in second.
     #   * when +nil+, local time zone offset is used.
     # @return [Time]
-    def to_time(offset='-00:00')
+    def to_time(offset = '-00:00')
       return @time if offset == '-00:00'
       Time.new(year, month, day, hour, min, @sec, offset)
     end
 
     def to_s
       frac = (@sec - sec)
-      frac_str = frac == 0 ? '' : "#{frac.to_s[1..-1]}"
-      @time.strftime("%FT%T") << frac_str
+      frac_str = frac.zero? ? '' : frac.to_s[1..-1]
+      @time.strftime('%FT%T') << frac_str
     end
 
     def ==(other)
-      other.kind_of?(self.class) &&
+      other.is_a?(self.class) &&
         to_time == other.to_time
     end
 
     def inspect
-      "#<#{self.class}: #{to_s}>"
+      "#<#{self.class}: #{self}>"
     end
   end
 end

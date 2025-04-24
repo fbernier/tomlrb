@@ -32,7 +32,7 @@ describe Tomlrb::Parser do
   tests_dirs.each do |tests_dir|
     Pathname.glob("#{tests_dir}/{values,valid}/**/*.toml").each do |toml_path|
       toml_path = toml_path.expand_path
-      local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, "..")))
+      local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
 
       it "parses #{local_path}" do
         actual = Tomlrb.load_file(toml_path.to_path)
@@ -50,7 +50,7 @@ describe Tomlrb::Parser do
 
     Pathname.glob("#{tests_dir}/{errors,invalid}/**/*.toml").each do |toml_path|
       toml_path = toml_path.expand_path
-      local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, "..")))
+      local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
 
       it "raises an error on parsing #{local_path}" do
         _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError, ArgumentError
@@ -96,10 +96,10 @@ def process_json_leaf(node)
     Tomlrb::LocalTime.new(hour, min, sec.to_f)
   when 'datetime'
     if v.match?(/\.\d+/)
-      date, time = v.split("T")
-      year, month, day = date.split("-")
-      hour, minute, second_and_zone = time.split(":", 3)
-      second, frac_and_zone = second_and_zone.split(".")
+      date, time = v.split('T')
+      year, month, day = date.split('-')
+      hour, minute, second_and_zone = time.split(':', 3)
+      second, frac_and_zone = second_and_zone.split('.')
       md = frac_and_zone.match(/(?<frac>\d+)(?<zone>.*)/)
       frac = md[:frac]
       zone = md[:zone]
@@ -119,7 +119,7 @@ end
 def process_json(node)
   case node
   when Hash
-    if node["type"]
+    if node['type']
       process_json_leaf(node)
     else
       node.each_with_object({}) {|(key, value), table|

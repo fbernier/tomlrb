@@ -1,6 +1,7 @@
+# frozen-string-literal: true
+
 module Tomlrb
   class StringUtils
-
     SPECIAL_CHARS = {
       '\\t'  => "\t",
       '\\b'  => "\b",
@@ -12,13 +13,13 @@ module Tomlrb
     }.freeze
 
     def self.multiline_replacements(str)
-      strip_spaces(str).gsub(/\\+\s*\n\s*/) {|matched|
+      strip_spaces(str).gsub(/\\+\s*\n\s*/) do |matched|
         if matched.match(/\\+/)[0].length.odd?
           matched.gsub(/\\\s*\n\s*/, '')
         else
           matched
         end
-      }
+      end
     end
 
     def self.replace_escaped_chars(str)

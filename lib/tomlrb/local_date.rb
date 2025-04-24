@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'forwardable'
 
 module Tomlrb
@@ -12,7 +14,7 @@ module Tomlrb
 
     # @param offset see {LocalDateTime#to_time}
     # @return [Time] 00:00:00 of the date
-    def to_time(offset='-00:00')
+    def to_time(offset = '-00:00')
       return @time if offset == '-00:00'
       Time.new(year, month, day, 0, 0, 0, offset)
     end
@@ -22,12 +24,12 @@ module Tomlrb
     end
 
     def ==(other)
-      other.kind_of?(self.class) &&
+      other.is_a?(self.class) &&
         to_time == other.to_time
     end
 
     def inspect
-      "#<#{self.class}: #{to_s}>"
+      "#<#{self.class}: #{self}>"
     end
   end
 end
