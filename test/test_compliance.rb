@@ -119,7 +119,7 @@ end
 def process_json(node)
   case node
   when Hash
-    if node['type']
+    if node.keys == ['type', 'value']
       process_json_leaf(node)
     else
       node.each_with_object({}) {|(key, value), table|
