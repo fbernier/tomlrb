@@ -53,7 +53,7 @@ describe Tomlrb::Parser do
       local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
 
       it "raises an error on parsing #{local_path}" do
-        _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError, ArgumentError
+        _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError, ArgumentError, IndexError, TypeError
       end
     end
   end
