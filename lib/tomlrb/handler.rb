@@ -175,6 +175,7 @@ module Tomlrb
         raise Key::KeyConflict, "Key #{key} is already used"
       end
       k = existed || Key.new(key, :table, declared)
+      k.declared = k.declared? || declared
       current[key] = k
       k
     end
@@ -206,6 +207,7 @@ module Tomlrb
     class KeyConflict < ParseError; end
 
     attr_reader :key, :type
+    attr_writer :declared
 
     def initialize(key, type, declared = false)
       @key = key
