@@ -25,6 +25,10 @@ INT_KEY = %w[
 ]
 
 describe Tomlrb::Parser do
+  toml_test_list_file = File.join(__dir__, '../toml-test/tests/files-toml-1.0.0')
+  toml_test_list = File.readlines(toml_test_list_file, chomp: true)
+  toml_test_list_base = Pathname.new("toml-test/tests")
+
   tests_dirs = [
     File.join(__dir__, '../toml-spec-tests'),
     File.join(__dir__, '../toml-test/tests')
@@ -33,6 +37,11 @@ describe Tomlrb::Parser do
     Pathname.glob("#{tests_dir}/{values,valid}/**/*.toml").each do |toml_path|
       toml_path = toml_path.expand_path
       local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
+
+      if tests_dir == File.join(__dir__, '../toml-test/tests')
+        path_in_list = local_path.relative_path_from(toml_test_list_base)
+        next unless toml_test_list.include?(path_in_list.to_path)
+      end
 
       it "parses #{local_path}" do
         actual = Tomlrb.load_file(toml_path.to_path)
@@ -51,6 +60,11 @@ describe Tomlrb::Parser do
     Pathname.glob("#{tests_dir}/{errors,invalid}/**/*.toml").each do |toml_path|
       toml_path = toml_path.expand_path
       local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
+
+      if tests_dir == File.join(__dir__, '../toml-test/tests')
+        path_in_list = local_path.relative_path_from(toml_test_list_base)
+        next unless toml_test_list.include?(path_in_list.to_path)
+      end
 
       it "raises an error on parsing #{local_path}" do
         _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError, ArgumentError, IndexError, TypeError
