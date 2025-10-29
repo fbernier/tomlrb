@@ -183,7 +183,10 @@ rule
                    v[3] = (v[3].to_i + 1).to_s
                  end
 
-                 Time.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f, v[6])
+                 time = Time.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f, v[6])
+                 # Should be out of parser.y?
+                 raise ArgumentError, "Invalid Offset Date-Time: #{v[0]}-#{v[1]}-#{v[2]}T#{v[3]}:#{v[4]}:#{v[5]}#{v[6]}" unless v[4].to_i == time.min && v[3].to_i == time.hour && v[2].to_i == time.day && v[1].to_i == time.month && v[0].to_i == time.year
+                 time
                end
     }
     | LOCAL_TIME { result = LocalTime.new(*val[0]) }

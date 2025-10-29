@@ -9,7 +9,9 @@ module Tomlrb
     def_delegators :@time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
 
     def initialize(year, month, day, hour, min, sec) # rubocop:disable Metrics/ParameterLists
-      @time = Time.new(year, month, day, hour, min, sec, '-00:00')
+      @time = Time.utc(year, month, day, hour, min, sec)
+      raise ArgumentError, "Invalid Local Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}" unless min.to_i == @time.min && hour.to_i == @time.hour && day.to_i == @time.day && month.to_i == @time.month && year.to_i == @time.year
+
       @sec = sec
     end
 

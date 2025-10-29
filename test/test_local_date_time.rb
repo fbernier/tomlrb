@@ -44,6 +44,12 @@ describe Tomlrb::LocalDate do
     _(d.to_s).must_equal '1979-05-27'
   end
 
+  it 'raises error for invalid date' do
+    assert_raises ArgumentError do
+      Tomlrb::LocalDate.new('2100', '02', '29')
+    end
+  end
+
   describe '#to_time' do
     subject { Tomlrb::LocalDate.new('1979', '05', '27') }
 

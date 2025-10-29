@@ -9,7 +9,8 @@ module Tomlrb
     def_delegators :@time, :year, :month, :day
 
     def initialize(year, month, day)
-      @time = Time.new(year, month, day, 0, 0, 0, '-00:00')
+      @time = Time.utc(year, month, day, 0, 0, 0)
+      raise ArgumentError, "Invalid Local Date: #{year}-#{month}-#{day}" unless day.to_i == @time.day && month.to_i == @time.month && year.to_i == @time.year
     end
 
     # @param offset see {LocalDateTime#to_time}
