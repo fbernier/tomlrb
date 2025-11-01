@@ -125,13 +125,14 @@ rule
     | BOOLEAN
     ;
   array
-    : start_array array_first_value array_values end_array
+    : start_array array_first_value array_values comma end_array
+    | start_array array_first_value array_values end_array
+    | start_array array_first_value comma end_array
     | start_array array_first_value end_array
     | start_array end_array
     ;
   array_first_value
-    :
-    | newlines non_nil_value
+    : newlines non_nil_value
     | non_nil_value
     ;
   array_values
@@ -146,9 +147,7 @@ rule
     : '[' { @handler.start_(:array) }
     ;
   end_array
-    : comma newlines ']' { array = @handler.end_(:array); @handler.push(array.compact) }
-    | comma ']' { array = @handler.end_(:array); @handler.push(array.compact) }
-    | newlines ']' { array = @handler.end_(:array); @handler.push(array.compact) }
+    : newlines ']' { array = @handler.end_(:array); @handler.push(array.compact) }
     | ']' { array = @handler.end_(:array); @handler.push(array.compact) }
     ;
   comma
