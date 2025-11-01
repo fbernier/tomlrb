@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD BOOLEAN NEWLINE EOS
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD BOOLEAN NEWLINE COMMA EOS
 rule
   expressions
     | expressions expression
@@ -66,7 +66,7 @@ rule
     | inline_assignment inline_next
     ;
   inline_next
-    : ',' inline_continued
+    : COMMA inline_continued
     ;
   inline_assignment
     : inline_assignment_key '=' value {
@@ -125,23 +125,47 @@ rule
     | BOOLEAN
     ;
   array
-    : start_array array_continued
+    : start_array array_first_value array_values end_array
+    | start_array array_first_value end_array
+    | start_array end_array
     ;
-  array_continued
-    : ']' { array = @handler.end_(:array); @handler.push(array.compact) }
-    | value array_next
-    | NEWLINE array_continued
+  array_first_value
+    :
+    | newlines non_nil_value
+    | non_nil_value
     ;
-  array_next
-    : ']' { array = @handler.end_(:array); @handler.push(array.compact) }
-    | ',' array_continued
-    | NEWLINE array_continued
+  array_values
+    : array_values array_value
+    | array_value
+    ;
+  array_value
+    : comma newlines non_nil_value
+    | comma non_nil_value
     ;
   start_array
     : '[' { @handler.start_(:array) }
     ;
+  end_array
+    : comma newlines ']' { array = @handler.end_(:array); @handler.push(array.compact) }
+    | comma ']' { array = @handler.end_(:array); @handler.push(array.compact) }
+    | newlines ']' { array = @handler.end_(:array); @handler.push(array.compact) }
+    | ']' { array = @handler.end_(:array); @handler.push(array.compact) }
+    ;
+  comma
+    : newlines COMMA
+    | COMMA
+    ;
+  newlines
+    : newlines NEWLINE
+    | NEWLINE
+    ;
   value
     : scalar { @handler.push(val[0]) }
+    | array
+    | inline_table
+    ;
+  non_nil_value
+    : non_nil_scalar { @handler.push(val[0]) }
     | array
     | inline_table
     ;
@@ -149,8 +173,15 @@ rule
     : string
     | literal
     ;
+  non_nil_scalar
+    : string
+    | non_nil_literal
+    ;
   literal
-    | FLOAT { result = val[0].to_f }
+    | non_nil_literal
+    ;
+  non_nil_literal
+    : FLOAT { result = val[0].to_f }
     | FLOAT_KEYWORD {
       v = val[0]
       result = if v.end_with?('nan')
