@@ -119,6 +119,8 @@ module Tomlrb
     private
 
     def assign_key_path(current, key, key_emptied)
+      existed = current.key?(key)
+      raise ParseError, "Cannot overwrite value with key #{key}" if existed && !current[key].is_a?(Hash)
       if key_emptied
         raise ParseError, "Cannot overwrite value with key #{key}" unless current.is_a?(Hash)
 
