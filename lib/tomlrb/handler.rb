@@ -72,16 +72,21 @@ module Tomlrb
 
     def push_inline(inline_arrays)
       merged_inline = {}
+      keys = Keys.new
 
       inline_arrays.each do |inline_array|
         current = merged_inline
         value = inline_array.pop
+        keys.add_table_key inline_array, value.is_a?(Array)
+
         inline_array.each_with_index do |inline_key, inline_index|
           inline_key = inline_key.to_sym if @symbolize_keys
           last_key = inline_index == inline_array.size - 1
 
           if last_key
             if current[inline_key].nil?
+              keys.add_pair_key [inline_key], []
+
               current[inline_key] = value
             else
               raise Key::KeyConflict, "Inline key #{inline_key} is already used"
