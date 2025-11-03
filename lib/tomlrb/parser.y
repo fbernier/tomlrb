@@ -1,5 +1,5 @@
 class Tomlrb::GeneratedParser
-token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD BOOLEAN NEWLINE COMMA EOS
+token IDENTIFIER STRING_MULTI STRING_BASIC STRING_LITERAL_MULTI STRING_LITERAL DATETIME LOCAL_TIME INTEGER NON_DEC_INTEGER FLOAT FLOAT_KEYWORD BOOLEAN NEWLINE EOS
 rule
   expressions
     | expressions expression
@@ -65,7 +65,7 @@ rule
     | inline_assignment inline_next
     ;
   inline_next
-    : COMMA inline_continued
+    : ',' inline_continued
     ;
   inline_assignment
     : inline_assignment_key '=' value {
@@ -152,8 +152,8 @@ rule
     | ']' { array = @handler.end_(:array); @handler.push(array.compact) }
     ;
   comma
-    : newlines COMMA
-    | COMMA
+    : newlines ','
+    | ','
     ;
   newlines
     : newlines NEWLINE
