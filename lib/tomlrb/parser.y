@@ -210,7 +210,7 @@ rule
                  end
                else
                  # Patch for 24:00:00 which Ruby parses
-                 if hour.to_i == 24 && month.to_i == 0 && day.to_i == 0
+                 if hour.to_i == 24 && min.to_i == 0 && sec.to_i == 0
                    hour = (hour.to_i + 1).to_s
                  end
 
