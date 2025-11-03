@@ -47,6 +47,8 @@ rule
     | NON_DEC_INTEGER
     | FLOAT_KEYWORD
     | BOOLEAN
+    | DATETIME { result = val[0][0] }
+    | LOCAL_TIME { result = val[0][0] }
     ;
   inline_table
     : inline_table_start inline_table_end
@@ -123,6 +125,8 @@ rule
     | NON_DEC_INTEGER
     | FLOAT_KEYWORD
     | BOOLEAN
+    | DATETIME { result = val[0][0] }
+    | LOCAL_TIME { result = val[0][0] }
     ;
   array
     : start_array array_first_value array_values comma end_array
