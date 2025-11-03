@@ -12,22 +12,19 @@ rule
     | NEWLINE
     ;
   table
-    : table_start table_continued NEWLINE
-    | table_start table_continued EOS
+    : table_start table_identifier table_end newlines
+    | table_start table_identifier table_end EOS
+    | table_start table_end newlines
+    | table_start table_end EOS
     ;
   table_start
     : '[' '[' { @handler.start_(:array_of_tables) }
     | '[' { @handler.start_(:table) }
     ;
-  table_continued
-    : ']' ']' { array = @handler.end_(:array_of_tables); @handler.set_context(array, is_array_of_tables: true) }
-    | ']' { array = @handler.end_(:table); @handler.set_context(array) }
-    | table_identifier table_next
     ;
-  table_next
+  table_end
     : ']' ']' { array = @handler.end_(:array_of_tables); @handler.set_context(array, is_array_of_tables: true) }
     | ']' { array = @handler.end_(:table); @handler.set_context(array) }
-    | '.' table_continued
     ;
   table_identifier
     : table_identifier '.' table_identifier_component { @handler.push(val[2]) }
