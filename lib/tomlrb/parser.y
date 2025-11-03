@@ -220,7 +220,7 @@ rule
                  time
                end
     }
-    | LOCAL_TIME { result = LocalTime.new(*val[0][1..]) }
+    | LOCAL_TIME { result = LocalTime.new(*val[0][1..-1]) }
     ;
   string
     : STRING_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0])) }
