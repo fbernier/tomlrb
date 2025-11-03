@@ -767,7 +767,7 @@ module_eval(<<'.,.,', 'parser.y', 203)
 
 module_eval(<<'.,.,', 'parser.y', 222)
   def _reduce_92(val, _values, result)
-     result = LocalTime.new(*val[0][1..])
+     result = LocalTime.new(*val[0][1..-1])
     result
   end
 .,.,
