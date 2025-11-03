@@ -38,6 +38,12 @@ describe Tomlrb::Parser do
       toml_path = toml_path.expand_path
       local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
 
+      if ENV['CI'] == 'true' && RUBY_ENGINE == 'truffleruby' &&
+        local_path.to_path == "toml-spec-tests/values/qa-table-inline-nested-1000.toml"
+        warn "Skipping #{local_path} on TruffleRuby CI due to stack size limitations"
+        next
+      end
+
       if tests_dir == File.join(__dir__, '../toml-test/tests')
         path_in_list = local_path.relative_path_from(toml_test_list_base)
         next unless toml_test_list.include?(path_in_list.to_path)
