@@ -200,22 +200,22 @@ rule
     }
     | BOOLEAN { result = val[0] == 'true' ? true : false }
     | DATETIME {
-      v = val[0]
-      result = if v[6].nil?
-                 if v[4].nil?
-                   LocalDate.new(v[0], v[1], v[2])
+      year, month, day, hour, min, sec, offset = val[0]
+      result = if offset.nil?
+                 if hour.nil?
+                   LocalDate.new(year, month, day)
                  else
-                   LocalDateTime.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f)
+                   LocalDateTime.new(year, month, day, hour, min || 0, sec.to_f)
                  end
                else
                  # Patch for 24:00:00 which Ruby parses
-                 if v[3].to_i == 24 && v[4].to_i == 0 && v[5].to_i == 0
-                   v[3] = (v[3].to_i + 1).to_s
+                 if hour.to_i == 24 && month.to_i == 0 && day.to_i == 0
+                   hour = (hour.to_i + 1).to_s
                  end
 
-                 time = Time.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f, v[6])
+                 time = Time.new(year, month, day, hour || 0, min || 0, sec.to_f, offset)
                  # Should be out of parser.y?
-                 raise ArgumentError, "Invalid Offset Date-Time: #{v[0]}-#{v[1]}-#{v[2]}T#{v[3]}:#{v[4]}:#{v[5]}#{v[6]}" unless v[4].to_i == time.min && v[3].to_i == time.hour && v[2].to_i == time.day && v[1].to_i == time.month && v[0].to_i == time.year
+                 raise ArgumentError, "Invalid Offset Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}#{offset}" unless min.to_i == time.min && hour.to_i == time.hour && day.to_i == time.day && month.to_i == time.month && year.to_i == time.year
                  time
                end
     }
