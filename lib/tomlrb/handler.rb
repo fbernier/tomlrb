@@ -129,7 +129,9 @@ module Tomlrb
       if key_emptied
         raise ParseError, "Cannot overwrite value with key #{key}" unless current.is_a?(Hash)
 
-        current[key] = @stack.pop
+        value = @stack.pop
+        raise ParseError, "Cannot overwrite value with key #{key}" if current[key].is_a?(Hash) && !value.is_a?(Hash)
+        current[key] = value
         return current
       end
       current[key] ||= {}
