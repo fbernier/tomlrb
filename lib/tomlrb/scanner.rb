@@ -75,12 +75,12 @@ module Tomlrb
 
     def process_datetime
       offset = @ss[7].gsub(/[zZ]/, '+00:00') if @ss[7]
-      args = [@ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6], offset]
+      args = [@ss[0], @ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6], offset]
       [:DATETIME, args]
     end
 
     def process_local_time
-      args = [@ss[1], @ss[2], @ss[3].to_f]
+      args = [@ss[0], @ss[1], @ss[2], @ss[3].to_f]
       [:LOCAL_TIME, args]
     end
 

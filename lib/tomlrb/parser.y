@@ -200,7 +200,7 @@ rule
     }
     | BOOLEAN { result = val[0] == 'true' ? true : false }
     | DATETIME {
-      year, month, day, hour, min, sec, offset = val[0]
+      _str, year, month, day, hour, min, sec, offset = val[0]
       result = if offset.nil?
                  if hour.nil?
                    LocalDate.new(year, month, day)
@@ -219,7 +219,7 @@ rule
                  time
                end
     }
-    | LOCAL_TIME { result = LocalTime.new(*val[0]) }
+    | LOCAL_TIME { result = LocalTime.new(*val[0][1..]) }
     ;
   string
     : STRING_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0])) }
