@@ -12,22 +12,19 @@ rule
     | NEWLINE
     ;
   table
-    : table_start table_continued NEWLINE
-    | table_start table_continued EOS
+    : table_start table_identifier table_end newlines
+    | table_start table_identifier table_end EOS
+    | table_start table_end newlines
+    | table_start table_end EOS
     ;
   table_start
     : '[' '[' { @handler.start_(:array_of_tables) }
     | '[' { @handler.start_(:table) }
     ;
-  table_continued
-    : ']' ']' { array = @handler.end_(:array_of_tables); @handler.set_context(array, is_array_of_tables: true) }
-    | ']' { array = @handler.end_(:table); @handler.set_context(array) }
-    | table_identifier table_next
     ;
-  table_next
+  table_end
     : ']' ']' { array = @handler.end_(:array_of_tables); @handler.set_context(array, is_array_of_tables: true) }
     | ']' { array = @handler.end_(:table); @handler.set_context(array) }
-    | '.' table_continued
     ;
   table_identifier
     : table_identifier '.' table_identifier_component { @handler.push(val[2]) }
@@ -47,6 +44,8 @@ rule
     | NON_DEC_INTEGER
     | FLOAT_KEYWORD
     | BOOLEAN
+    | DATETIME { result = val[0][0] }
+    | LOCAL_TIME { result = val[0][0] }
     ;
   inline_table
     : inline_table_start inline_table_end
@@ -123,25 +122,50 @@ rule
     | NON_DEC_INTEGER
     | FLOAT_KEYWORD
     | BOOLEAN
+    | DATETIME { result = val[0][0] }
+    | LOCAL_TIME { result = val[0][0] }
     ;
   array
-    : start_array array_continued
+    : start_array array_first_value array_values comma end_array
+    | start_array array_first_value array_values end_array
+    | start_array array_first_value comma end_array
+    | start_array array_first_value end_array
+    | start_array end_array
     ;
-  array_continued
-    : ']' { array = @handler.end_(:array); @handler.push(array.compact) }
-    | value array_next
-    | NEWLINE array_continued
+  array_first_value
+    : newlines non_nil_value
+    | non_nil_value
     ;
-  array_next
-    : ']' { array = @handler.end_(:array); @handler.push(array.compact) }
-    | ',' array_continued
-    | NEWLINE array_continued
+  array_values
+    : array_values array_value
+    | array_value
+    ;
+  array_value
+    : comma newlines non_nil_value
+    | comma non_nil_value
     ;
   start_array
     : '[' { @handler.start_(:array) }
     ;
+  end_array
+    : newlines ']' { array = @handler.end_(:array); @handler.push(array.compact) }
+    | ']' { array = @handler.end_(:array); @handler.push(array.compact) }
+    ;
+  comma
+    : newlines ','
+    | ','
+    ;
+  newlines
+    : newlines NEWLINE
+    | NEWLINE
+    ;
   value
     : scalar { @handler.push(val[0]) }
+    | array
+    | inline_table
+    ;
+  non_nil_value
+    : non_nil_scalar { @handler.push(val[0]) }
     | array
     | inline_table
     ;
@@ -149,8 +173,15 @@ rule
     : string
     | literal
     ;
+  non_nil_scalar
+    : string
+    | non_nil_literal
+    ;
   literal
-    | FLOAT { result = val[0].to_f }
+    | non_nil_literal
+    ;
+  non_nil_literal
+    : FLOAT { result = val[0].to_f }
     | FLOAT_KEYWORD {
       v = val[0]
       result = if v.end_with?('nan')
@@ -170,23 +201,26 @@ rule
     }
     | BOOLEAN { result = val[0] == 'true' ? true : false }
     | DATETIME {
-      v = val[0]
-      result = if v[6].nil?
-                 if v[4].nil?
-                   LocalDate.new(v[0], v[1], v[2])
+      _str, year, month, day, hour, min, sec, offset = val[0]
+      result = if offset.nil?
+                 if hour.nil?
+                   LocalDate.new(year, month, day)
                  else
-                   LocalDateTime.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f)
+                   LocalDateTime.new(year, month, day, hour, min || 0, sec.to_f)
                  end
                else
                  # Patch for 24:00:00 which Ruby parses
-                 if v[3].to_i == 24 && v[4].to_i == 0 && v[5].to_i == 0
-                   v[3] = (v[3].to_i + 1).to_s
+                 if hour.to_i == 24 && min.to_i == 0 && sec.to_i == 0
+                   hour = (hour.to_i + 1).to_s
                  end
 
-                 Time.new(v[0], v[1], v[2], v[3] || 0, v[4] || 0, v[5].to_f, v[6])
+                 time = Time.new(year, month, day, hour || 0, min || 0, sec.to_f, offset)
+                 # Should be out of parser.y?
+                 raise ArgumentError, "Invalid Offset Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}#{offset}" unless min.to_i == time.min && hour.to_i == time.hour && day.to_i == time.day && month.to_i == time.month && year.to_i == time.year
+                 time
                end
     }
-    | LOCAL_TIME { result = LocalTime.new(*val[0]) }
+    | LOCAL_TIME { result = LocalTime.new(*val[0][1..-1]) }
     ;
   string
     : STRING_MULTI { result = StringUtils.replace_escaped_chars(StringUtils.multiline_replacements(val[0])) }

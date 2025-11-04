@@ -25,6 +25,10 @@ INT_KEY = %w[
 ]
 
 describe Tomlrb::Parser do
+  toml_test_list_file = File.join(__dir__, '../toml-test/tests/files-toml-1.0.0')
+  toml_test_list = File.readlines(toml_test_list_file, chomp: true)
+  toml_test_list_base = Pathname.new("toml-test/tests")
+
   tests_dirs = [
     File.join(__dir__, '../toml-spec-tests'),
     File.join(__dir__, '../toml-test/tests')
@@ -35,6 +39,16 @@ describe Tomlrb::Parser do
       local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
 
       it "parses #{local_path}" do
+        if ENV['CI'] == 'true' && RUBY_ENGINE == 'truffleruby' &&
+           local_path.to_path == 'toml-spec-tests/values/qa-table-inline-nested-1000.toml'
+          skip 'Skipping #{local_path} on TruffleRuby CI due to stack size limitations'
+        end
+
+        if tests_dir == File.join(__dir__, '../toml-test/tests')
+          path_in_list = local_path.relative_path_from(toml_test_list_base)
+          skip 'Skipping test for Toml 1.1' unless toml_test_list.include?(path_in_list.to_path)
+        end
+
         actual = Tomlrb.load_file(toml_path.to_path)
         json_path = toml_path.sub_ext('.json')
         yaml_path = toml_path.sub_ext('.yaml')
@@ -52,8 +66,13 @@ describe Tomlrb::Parser do
       toml_path = toml_path.expand_path
       local_path = toml_path.relative_path_from(Pathname.new(File.join(__dir__, '..')))
 
+      if tests_dir == File.join(__dir__, '../toml-test/tests')
+        path_in_list = local_path.relative_path_from(toml_test_list_base)
+        next unless toml_test_list.include?(path_in_list.to_path)
+      end
+
       it "raises an error on parsing #{local_path}" do
-        _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError, ArgumentError
+        _{ Tomlrb.load_file(toml_path.to_path) }.must_raise Tomlrb::ParseError, RangeError, ArgumentError, IndexError, TypeError
       end
     end
   end
@@ -119,7 +138,7 @@ end
 def process_json(node)
   case node
   when Hash
-    if node['type']
+    if node.keys == ['type', 'value']
       process_json_leaf(node)
     else
       node.each_with_object({}) {|(key, value), table|

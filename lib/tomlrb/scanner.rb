@@ -13,7 +13,7 @@ module Tomlrb
     NEWLINE =
       /(?:[ \t]*(?:\r?\n)[ \t]*)+/.freeze
     STRING_BASIC =
-      /(")(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/.freeze
+      /(")(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F\\]|(?:\\[^\u0000-\u0008\u000A-\u001F\u007F]))*?\1/.freeze
     STRING_MULTI =
       /"{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?(?<!\\)"{3,5})/m.freeze
     STRING_LITERAL =
@@ -21,9 +21,9 @@ module Tomlrb
     STRING_LITERAL_MULTI =
       /'{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?'{3,5})/m.freeze
     DATETIME =
-      /(-?\d{4})-(\d{2})-(\d{2})(?:(?:t|\s)(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?))?(z|[-+]\d{2}:\d{2})?/i.freeze
+      /(-?\d{4})-([01]\d)-([0-3]\d)(?:(?:t|\s)([0-2]\d):([0-5]\d):([0-6]\d(?:\.\d+)?))?(z|[-+][01]\d:\d{2})?/i.freeze
     LOCAL_TIME =
-      /(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/.freeze
+      /([0-2]\d):([0-5]\d):([0-6]\d(?:\.\d+)?)/.freeze
     FLOAT =
       /[+-]?(?:(?:\d|[1-9](?:_?\d)*)\.\d(?:_?\d)*|\d+(?=[eE]))(?:[eE][+-]?[0-9]+(_[0-9])*[0-9]*)?(?!\w)/.freeze
     FLOAT_KEYWORD =
@@ -73,12 +73,12 @@ module Tomlrb
 
     def process_datetime
       offset = @ss[7].gsub(/[zZ]/, '+00:00') if @ss[7]
-      args = [@ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6], offset]
+      args = [@ss[0], @ss[1], @ss[2], @ss[3], @ss[4], @ss[5], @ss[6], offset]
       [:DATETIME, args]
     end
 
     def process_local_time
-      args = [@ss[1], @ss[2], @ss[3].to_f]
+      args = [@ss[0], @ss[1], @ss[2], @ss[3].to_f]
       [:LOCAL_TIME, args]
     end
 

@@ -72,16 +72,21 @@ module Tomlrb
 
     def push_inline(inline_arrays)
       merged_inline = {}
+      keys = Keys.new
 
       inline_arrays.each do |inline_array|
         current = merged_inline
         value = inline_array.pop
+        keys.add_table_key inline_array, value.is_a?(Array)
+
         inline_array.each_with_index do |inline_key, inline_index|
           inline_key = inline_key.to_sym if @symbolize_keys
           last_key = inline_index == inline_array.size - 1
 
           if last_key
             if current[inline_key].nil?
+              keys.add_pair_key [inline_key], []
+
               current[inline_key] = value
             else
               raise Key::KeyConflict, "Inline key #{inline_key} is already used"
@@ -119,10 +124,14 @@ module Tomlrb
     private
 
     def assign_key_path(current, key, key_emptied)
+      existed = current.key?(key)
+      raise ParseError, "Cannot overwrite value with key #{key}" if existed && !current[key].is_a?(Hash)
       if key_emptied
         raise ParseError, "Cannot overwrite value with key #{key}" unless current.is_a?(Hash)
 
-        current[key] = @stack.pop
+        value = @stack.pop
+        raise ParseError, "Cannot overwrite value with key #{key}" if current[key].is_a?(Hash) && !value.is_a?(Hash)
+        current[key] = value
         return current
       end
       current[key] ||= {}
@@ -175,6 +184,7 @@ module Tomlrb
         raise Key::KeyConflict, "Key #{key} is already used"
       end
       k = existed || Key.new(key, :table, declared)
+      k.declared = k.declared? || declared
       current[key] = k
       k
     end
@@ -206,6 +216,7 @@ module Tomlrb
     class KeyConflict < ParseError; end
 
     attr_reader :key, :type
+    attr_writer :declared
 
     def initialize(key, type, declared = false)
       @key = key

@@ -9,7 +9,8 @@ module Tomlrb
     def_delegators :@time, :hour, :min, :sec, :usec, :nsec
 
     def initialize(hour, min, sec)
-      @time = Time.new(0, 1, 1, hour, min, sec, '-00:00')
+      @time = Time.utc(0, 1, 1, hour, min, sec)
+      raise ArgumentError, "Invalid Local Time: #{hour}-#{min}-#{sec}" unless min.to_i == @time.min && hour.to_i == @time.hour
       @sec = sec
     end
 
