@@ -1,3 +1,9 @@
+### 2.0.4 - 2025-12-18
+
+* Update Racc to v1.8.1
+* Code cleanup
+* Fix conformance to TOML v1.0.0
+
 ### 2.0.3 - 2022-05-28
 
 * Enable symbolize_keys: true for inline tables
