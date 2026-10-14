@@ -1,3 +1,9 @@
+### Unreleased
+
+* Fix exponential backtracking (ReDoS) when scanning unterminated basic and literal strings
+* Fix `SystemStackError` and quadratic scan time on long runs of spaces/tabs
+* Literal strings no longer treat `\'` as an escaped quote, per the TOML spec
+
 ### 2.0.4 - 2025-12-18
 
 * Update Racc to v1.8.1
