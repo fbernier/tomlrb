@@ -1,18 +1,26 @@
 # frozen-string-literal: true
 
 require 'forwardable'
+require 'tomlrb/local_date'
 
 module Tomlrb
   class LocalDateTime
     extend Forwardable
 
-    def_delegators :@time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
+    def_delegators :to_time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
 
+    # Fields are validated here; the Time behind them is built on first use, which
+    # matters most for fractional seconds (a Float becomes an exact Rational).
     def initialize(year, month, day, hour, min, sec) # rubocop:disable Metrics/ParameterLists
-      @time = Time.utc(year, month, day, hour, min, sec)
-      raise ArgumentError, "Invalid Local Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}" unless min.to_i == @time.min && hour.to_i == @time.hour && day.to_i == @time.day && month.to_i == @time.month && year.to_i == @time.year
-
+      @year = year.to_i
+      @month = month.to_i
+      @day = day.to_i
+      @hour = hour.to_i
+      @min = min.to_i
       @sec = sec
+      unless LocalDate.valid_date?(@year, @month, @day) && @hour < 24 && @min < 60 && sec.to_f < 60
+        raise ArgumentError, "Invalid Local Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}"
+      end
     end
 
     # @param offset [String, Symbol, Numeric, nil] time zone offset.
@@ -22,14 +30,15 @@ module Tomlrb
     #   * when +nil+, local time zone offset is used.
     # @return [Time]
     def to_time(offset = '-00:00')
-      return @time if offset == '-00:00'
-      Time.new(year, month, day, hour, min, @sec, offset)
+      return @time ||= Time.utc(@year, @month, @day, @hour, @min, @sec) if offset == '-00:00'
+
+      Time.new(@year, @month, @day, @hour, @min, @sec, offset)
     end
 
     def to_s
       frac = (@sec - sec)
       frac_str = frac.zero? ? '' : frac.to_s[1..-1]
-      @time.strftime('%FT%T') << frac_str
+      to_time.strftime('%FT%T') << frac_str
     end
 
     def ==(other)

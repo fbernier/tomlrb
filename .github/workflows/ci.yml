@@ -8,10 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        ruby: [2.5, 2.6, 2.7, 3.0, 3.1, 3.2, 3.3, head, jruby, jruby-head, truffleruby]
-        exclude:
-          - os: macos-latest
-            ruby: 2.5
+        ruby: ['3.0', '3.1', '3.2', '3.3', '3.4', head, jruby, jruby-head, truffleruby]
     runs-on: ${{ matrix.os }}
     env:
       JRUBY_OPTS: -J-Xss16m
@@ -23,5 +20,4 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-          rubygems: 3.2.3
       - run: bundle exec rake

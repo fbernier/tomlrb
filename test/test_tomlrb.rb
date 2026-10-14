@@ -93,6 +93,96 @@ describe Tomlrb::Parser do
       _(Tomlrb.parse(" \t" * 100_000)).must_equal({})
     end
   end
+
+  it "rejects spaced array of tables brackets regardless of indentation, line endings or preceding text" do
+    _{ Tomlrb.parse("  [ [a]]\n") }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.parse("[[a] ]\r\n") }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.parse("x = \"ééé\"\n[ [a] ]\n") }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "parses a multiline array whose line starts with a spaced nested array" do
+    _(Tomlrb.parse("a = [\n[ [1, 2]]\n]\n")).must_equal({"a"=>[[[1, 2]]]})
+  end
+
+  it "parses bare keys that start with a boolean or float keyword" do
+    toml = "trueval = 1\nfalse_alarm = 2\ninf-x = 3\n[nan-table]\ntrue-ish = true\n"
+    _(Tomlrb.parse(toml)).must_equal({"trueval"=>1, "false_alarm"=>2, "inf-x"=>3, "nan-table"=>{"true-ish"=>true}})
+  end
+
+  it "parses bare keys that look like dates or numbers" do
+    _(Tomlrb.parse("1979-05-27a = 1\n0x1f = 2\n[[1e5]]\n")).must_equal({"1979-05-27a"=>1, "0x1f"=>2, "1e5"=>[{}]})
+    _{ Tomlrb.parse("07:32:00 = 1\n") }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "requires a value in inline tables" do
+    _{ Tomlrb.parse("a = {b = }\n") }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.parse("a = [{b = 1}, {c = }]\n") }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "rejects an inline table that is not assigned to a key" do
+    _{ Tomlrb.parse("{a = 1}\n") }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "allows newlines inside arrays but not directly inside inline tables" do
+    _(Tomlrb.parse("a = {b = [1,\n# c\n2]}\n")).must_equal({"a"=>{"b"=>[1, 2]}})
+    _{ Tomlrb.parse("a = {b = 1,\nc = 2}\n") }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "parses deeply nested inline tables and arrays in linear time" do
+    Timeout.timeout(5) do
+      parsed = Tomlrb.parse("a = " + "[{b=" * 50_000 + "1" + "}]" * 50_000)
+      _(parsed["a"][0]["b"][0]["b"]).must_be_kind_of(Array)
+    end
+  end
+
+  it "parses nesting far deeper than the VM stack allows for recursion" do
+    parsed = Tomlrb.parse("a = " + "[" * 200_000 + "]" * 200_000)
+    _(parsed["a"].flatten).must_equal([])
+  end
+
+  it "rejects a whitespace run followed by junk inside an array in linear time" do
+    Timeout.timeout(5) do
+      _{ Tomlrb.parse("a = [\"a\"" + " " * 1_000_000 + "x]") }.must_raise(Tomlrb::ParseError)
+    end
+  end
+
+  it "trims a CRLF right after the opening delimiter of multi-line strings" do
+    _(Tomlrb.parse("a = \"\"\"\r\nx\"\"\"\nb = '''\r\ny'''\n")).must_equal({"a"=>"x", "b"=>"y"})
+  end
+
+  it "rejects a carriage return without line feed" do
+    _{ Tomlrb.parse("a = \"\"\"x\ry\"\"\"\n") }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.parse("a = '''x\ry'''\n") }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.parse("a = 1\r") }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "rejects control characters in comments" do
+    _{ Tomlrb.parse("# a\n# b \x01\na = 1\n") }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "only separates date and time with T or a space" do
+    _{ Tomlrb.parse("a = 1979-05-27\n07:32:00\n") }.must_raise(Tomlrb::ParseError)
+    _{ Tomlrb.parse("a = 1979-05-27\t07:32:00\n") }.must_raise(Tomlrb::ParseError)
+    _(Tomlrb.parse("a = 1979-05-27 07:32:00\n")["a"]).must_equal(Tomlrb::LocalDateTime.new(1979, 5, 27, 7, 32, 0.0))
+  end
+
+  it "rejects calendar dates that do not exist" do
+    _{ Tomlrb.parse("a = 1979-06-31T05:43:47-00:00\n") }.must_raise(ArgumentError)
+    _{ Tomlrb.parse("a = 2100-02-29\n") }.must_raise(ArgumentError)
+    _(Tomlrb.parse("a = 2000-02-29\n")["a"].to_s).must_equal("2000-02-29")
+  end
+
+  it "decodes escapes in single-line and multi-line basic strings" do
+    toml = %(a = "t\\tq\\"\\u00e9\\U0001F600\\\\"\nb = """x \\\n   y \\"""\nc"""\n)
+    _(Tomlrb.parse(toml)).must_equal({"a"=>"t\tq\"é😀\\", "b"=>"x y \"\"\"\nc"})
+    _{ Tomlrb.parse(%(a = "\\e"\n)) }.must_raise(Tomlrb::ParseError)
+    _(Tomlrb.parse(%(a = """x\\\\"""\n))).must_equal({"a"=>"x\\"})
+  end
+
+  it "reports the line and column of a syntax error" do
+    error = _{ Tomlrb.parse("a = 1\nb = ?\n") }.must_raise(Tomlrb::ParseError)
+    _(error.message).must_match(/line 2, column 5/)
+  end
 end
 
 class TomlExamples

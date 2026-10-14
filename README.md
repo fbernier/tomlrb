@@ -4,7 +4,7 @@
 [![Gem Version](https://badge.fury.io/rb/tomlrb.svg)](http://badge.fury.io/rb/tomlrb)
 [![Build status](https://github.com/fbernier/tomlrb/workflows/ci/badge.svg)](https://github.com/fbernier/tomlrb/actions)
 
-A Racc based [TOML](https://github.com/toml-lang/toml) Ruby parser supporting the 1.0.0 version of the spec.
+A fast, pure-Ruby [TOML](https://github.com/toml-lang/toml) parser supporting the 1.0.0 version of the spec. Requires Ruby 3.0 or later.
 
 ## TODO
 
@@ -40,23 +40,15 @@ Tomlrb.load_file('my_file', symbolize_keys: true)
 
 ## Benchmark
 
-You can run the benchmark against the only other v0.5.0 compliant parser to my knowledge with `ruby benchmarks/bench.rb`.
+`ruby benchmarks/bench.rb [file]` compares against [toml-rb](https://github.com/emancu/toml-rb) and [perfect_toml](https://github.com/mame/perfect_toml) when they are installed. It parses `test/example-v0.4.0.toml` unless given a file.
 
-Here are the results on my machine:
+CPU instructions per parse (fewer is better), measured with `perf stat` on CRuby 3.3 without YJIT. YJIT shows the same ratios.
 
-```
-Warming up --------------------------------------
-      emancu/toml-rb     1.000  i/100ms
-     fbernier/tomlrb    33.000  i/100ms
-Calculating -------------------------------------
-      emancu/toml-rb     15.597  (± 6.4%) i/s -     78.000  in   5.020321s
-     fbernier/tomlrb    348.307  (± 5.2%) i/s -      1.749k in   5.034878s
-
-Comparison:
-     fbernier/tomlrb:      348.3 i/s
-      emancu/toml-rb:       15.6 i/s - 22.33x  (± 0.00) slower
-
-```
+| Input | tomlrb | perfect_toml 0.9.1 | tomlrb 2.0.4 |
+|---|---|---|---|
+| `test/example-v0.4.0.toml` (5 KB) | 1.9 M | 3.4 M | 17.7 M |
+| 300 crates.io `Cargo.toml` files (620 KB) | 260 M | 578 M | 3,180 M |
+| rust-lang/rust `Cargo.lock` (158 KB) | 50 M | 123 M | 677 M |
 
 ## Development
 

@@ -1,15 +1,10 @@
 # frozen-string-literal: true
 
-require 'time'
-require 'stringio'
 require 'tomlrb/version'
 require 'tomlrb/local_date_time'
 require 'tomlrb/local_date'
 require 'tomlrb/local_time'
-require 'tomlrb/string_utils'
-require 'tomlrb/scanner'
 require 'tomlrb/parser'
-require 'tomlrb/handler'
 
 module Tomlrb
   class ParseError < StandardError; end
@@ -21,16 +16,8 @@ module Tomlrb
   # @option options [Boolean] :symbolize_keys (false) whether to return the keys as symbols or strings
   # @return [Hash] the Ruby data structure represented by the input
   def self.parse(string_or_io, **options)
-    io = string_or_io.is_a?(String) ? StringIO.new(string_or_io) : string_or_io
-    scanner = Scanner.new(io)
-    parser = Parser.new(scanner, **options)
-    begin
-      handler = parser.parse
-    rescue Racc::ParseError => e
-      raise ParseError, e.message
-    end
-
-    handler.output
+    src = string_or_io.is_a?(String) ? string_or_io : string_or_io.read
+    Parser.new(src, **options).parse
   end
 
   # Reads a file content and parses it into its Ruby data structure
