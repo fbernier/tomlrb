@@ -1,10 +1,23 @@
-require "bundler/gem_tasks"
-require 'rake/testtask'
+# frozen_string_literal: true
 
-Rake::TestTask.new do |t|
-  t.libs << "test"
-  t.test_files = FileList['test/test*.rb']
-  t.verbose = true
+require "bundler/gem_tasks"
+require "minitest/test_task"
+require "standard/rake"
+
+Minitest::TestTask.create do |t|
+  t.test_globs = ["test/test_*.rb"]
+  t.warning = true
 end
 
-task default: [:test]
+desc "Validate the RBS signatures in sig/"
+task :rbs do
+  sh "rbs", "-I", "sig", "validate"
+end
+
+desc "Run the official toml-test runner (needs Go) against bin/toml-test-decoder"
+task :toml_test do
+  decoder = "ruby #{File.expand_path("bin/toml-test-decoder", __dir__)}"
+  Dir.chdir("toml-test") { sh "go", "run", "./cmd/toml-test", "test", "-toml=1.0", "-decoder=#{decoder}" }
+end
+
+task default: %i[test standard rbs]

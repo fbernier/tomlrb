@@ -1,20 +1,35 @@
 ### Unreleased
 
-* Replace the Racc grammar with a hand-written single-pass parser. Racc is no longer used and Ruby 3.0 or later is required. Parsing executes 1.8-2.5x fewer instructions than perfect_toml 0.9.1 and 9-13x fewer than 2.0.4, interpreted or with YJIT
-* Nesting depth of arrays and inline tables is limited only by memory: containers are parsed with an explicit stack
-* Parse errors report the line and column
-* Reject spaced array-of-tables brackets (`[ [a]]`, `[[a] ]`) on indented and CRLF lines too, and stop rejecting multiline arrays whose line starts with `[ [`
-* Reject negative-year dates such as `-2021-01-01`, which TOML does not allow
+Breaking changes (release as 3.0.0):
+
+* Require Ruby 3.3 or later
+* Fractional seconds are exact `Rational`s instead of `Float`s: `Time`, `LocalDateTime` and `LocalTime` values carry `56.123`, not `56.122999…`
+* Remove `Tomlrb::Scanner`, `Tomlrb::Handler`, `Tomlrb::StringUtils`, `Tomlrb::GeneratedParser`, `Tomlrb::Keys` and `Tomlrb::Key`; `Tomlrb::Parser.new` now takes the document string. Key redefinitions raise `Tomlrb::ParseError` as before
+* `require "tomlrb"` no longer loads `time` and `stringio`
+
+Security:
+
+* Nesting depth of arrays and inline tables is limited only by memory: they are parsed with an explicit stack
+
+Performance:
+
+* Replace the Racc grammar with a hand-written single-pass parser; Racc is no longer used. Parsing executes 1.8-2.5x fewer instructions than perfect_toml 0.9.1 and 9-13x fewer than 2.0.4, interpreted or with YJIT
+
+Conformance (all 679 TOML 1.0 cases of toml-test 2.2.0 now pass):
+
+* An escaped backslash right before a closing `"""` (`"""x\\"""`) ends the string
+* Reject a carriage return not followed by a line feed in multi-line strings, and trim a CRLF (not just LF) right after an opening `"""` or `'''`
 * Parse bare keys that start with `true`, `false`, `inf` or `nan` (`trueval`, `inf-x`) or look like dates and numbers (`1979-05-27a`, `0x1f`, `[[1e5]]`), and reject keys containing `:`
 * Reject empty values in inline tables (`{a = }`), inline tables that are not assigned to a key, and dotted keys that extend an inline table
-* Remove the internal `Tomlrb::Keys`/`Tomlrb::Key` classes; key redefinitions raise `Tomlrb::ParseError` as before
-* Remove `Tomlrb::Scanner`, `Tomlrb::Handler`, `Tomlrb::StringUtils` and `Tomlrb::GeneratedParser`; `Tomlrb::Parser.new` now takes the document string
-* `require 'tomlrb'` no longer loads `time` and `stringio`
-* Reject a carriage return not followed by a line feed in multi-line strings, and trim a CRLF (not just LF) right after an opening `"""` or `'''`
-* Separate date and time only with `T`, `t` or a space, accept an offset only after a time, and reject offset date-times on days that do not exist (`1979-06-31T00:00:00-00:00`)
+* Reject spaced array-of-tables brackets (`[ [a]]`, `[[a] ]`) on indented and CRLF lines too, and stop rejecting multi-line arrays whose line starts with `[ [`
+* Separate date and time only with `T`, `t` or a space, accept an offset only after a time, and reject negative years and days that do not exist (`1979-06-31T00:00:00-00:00`)
 * Reject floats with leading zeros (`01e5`) and accept underscores in exponents (`1e1_0`)
-* An escaped backslash right before the closing `"""` (`"""x\\"""`) ends the string instead of being read as an escaped quote
+
+Other:
+
+* Parse errors report the line and column
 * `LocalDate`, `LocalDateTime` and `LocalTime` validate their fields arithmetically and build their `Time` on first use
+* Ship RBS type signatures in `sig/`
 
 ### 2.0.5 - 2026-10-15
 

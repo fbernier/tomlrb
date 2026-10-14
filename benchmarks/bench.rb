@@ -1,8 +1,12 @@
 #!/usr/bin/env ruby
-require "benchmark/ips"
+# frozen_string_literal: true
 
-$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
-require "tomlrb"
+# Compares Tomlrb.parse with other parsers that are installed.
+#
+#   ruby benchmarks/bench.rb [file.toml]
+
+require "benchmark/ips"
+require_relative "../lib/tomlrb"
 
 # Other parsers are compared when installed (`gem install toml-rb perfect_toml`).
 others = {

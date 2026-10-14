@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Decoder for the official toml-test runner (https://github.com/toml-lang/toml-test):
+# reads TOML on stdin, prints its JSON description, exits 1 on invalid TOML.
+#
+#   toml-test test -decoder="ruby bin/toml-test-decoder"
+
+require_relative "../lib/tomlrb"
+require_relative "../test/support/toml_test_json"
+
+begin
+  document = Tomlrb.parse($stdin.read)
+rescue Tomlrb::ParseError, ArgumentError, RangeError => e
+  warn "#{e.class}: #{e.message}"
+  exit 1
+end
+
+puts JSON.generate(TomlTestJSON.describe(document))

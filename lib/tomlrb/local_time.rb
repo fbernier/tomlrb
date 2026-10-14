@@ -1,34 +1,38 @@
-# frozen-string-literal: true
+# frozen_string_literal: true
 
-require 'forwardable'
+require "forwardable"
 
 module Tomlrb
+  # A TOML local time (no date, no offset), e.g. `07:32:00.999999`.
   class LocalTime
     extend Forwardable
 
     def_delegators :time, :hour, :min, :sec, :usec, :nsec
 
+    # @return [String] `.` and the digits of a fractional second count (`""` if whole)
+    def self.fraction(seconds)
+      fraction = seconds - seconds.floor
+      fraction.zero? ? "" : format("%.9f", fraction)[1..].sub(/0+\z/, "")
+    end
+
     # Fields are validated here; the Time behind them is built on first use.
+    #
+    # @param sec [Integer, Rational, Float] seconds, fraction included
     def initialize(hour, min, sec)
       @hour = hour.to_i
       @min = min.to_i
       @sec = sec
-      raise ArgumentError, "Invalid Local Time: #{hour}-#{min}-#{sec}" unless @hour < 24 && @min < 60 && sec.to_f < 60
+      raise ArgumentError, "Invalid Local Time: #{hour}:#{min}:#{sec}" unless @hour < 24 && @min < 60 && sec < 60
     end
 
-    # @param year [Integer]
-    # @param month [Integer]
-    # @param day [Integer]
     # @param offset see {LocalDateTime#to_time}
-    # @return [Time] the time of the date specified by params
-    def to_time(year, month, day, offset = '-00:00')
+    # @return [Time] this time on the given day
+    def to_time(year, month, day, offset = "-00:00")
       Time.new(year, month, day, @hour, @min, @sec, offset)
     end
 
     def to_s
-      frac = (@sec - sec)
-      frac_str = frac.zero? ? '' : frac.to_s[1..-1]
-      time.strftime('%T') << frac_str
+      time.strftime("%T") << LocalTime.fraction(@sec)
     end
 
     def ==(other)

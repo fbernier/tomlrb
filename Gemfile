@@ -1,12 +1,11 @@
-source 'https://rubygems.org'
+# frozen_string_literal: true
 
-group :development do
-  gem "bundler"
-  gem "rake"
-  gem "psych", "~> 4"
-  gem "minitest"
-  gem "minitest-reporters"
-  gem "benchmark-ips"
-end
+source "https://rubygems.org"
 
 gemspec
+
+gem "benchmark-ips", "~> 2.15"
+gem "minitest", "~> 6.0"
+gem "rake", "~> 13"
+gem "rbs", "~> 4.2"
+gem "standard", "~> 1.57"
