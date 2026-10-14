@@ -9,7 +9,9 @@ module Tomlrb
   class LocalDateTime
     extend Forwardable
 
-    def_delegators :to_time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
+    attr_reader :year, :month, :day, :hour, :min
+
+    def_delegators :to_time, :sec, :usec, :nsec
 
     # Fields are validated here; the Time behind them is built on first use.
     #
@@ -21,9 +23,8 @@ module Tomlrb
       @hour = hour.to_i
       @min = min.to_i
       @sec = sec
-      unless LocalDate.valid_date?(@year, @month, @day) && @hour < 24 && @min < 60 && sec < 60
-        raise ArgumentError, "Invalid Local Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}"
-      end
+      raise ArgumentError, "Invalid Local Date-Time: #{self}" unless
+        LocalDate.valid_date?(@year, @month, @day) && @hour < 24 && @min < 60 && sec < 60
     end
 
     # @param offset [String, Integer, nil] UTC offset as accepted by Time.new
@@ -36,16 +37,21 @@ module Tomlrb
     end
 
     def to_s
-      to_time.strftime("%FT%T") << LocalTime.fraction(@sec)
+      format("%04d-%02d-%02dT", @year, @month, @day) << LocalTime.format(@hour, @min, @sec)
     end
 
     def ==(other)
-      other.is_a?(self.class) &&
-        to_time == other.to_time
+      other.is_a?(self.class) && @year == other.year && @month == other.month && @day == other.day &&
+        @hour == other.hour && @min == other.min && @sec == other.seconds
     end
 
     def inspect
       "#<#{self.class}: #{self}>"
     end
+
+    protected
+
+    # Seconds with their fraction; #sec is the whole part only, like Time#sec.
+    def seconds = @sec
   end
 end

@@ -7,12 +7,16 @@ module Tomlrb
   class LocalTime
     extend Forwardable
 
-    def_delegators :time, :hour, :min, :sec, :usec, :nsec
+    attr_reader :hour, :min
 
-    # @return [String] `.` and the digits of a fractional second count (`""` if whole)
-    def self.fraction(seconds)
-      fraction = seconds - seconds.floor
-      fraction.zero? ? "" : format("%.9f", fraction)[1..].sub(/0+\z/, "")
+    def_delegators :time, :sec, :usec, :nsec
+
+    # @return [String] `hh:mm:ss`, plus `.` and the fraction digits if `sec` has any
+    def self.format(hour, min, sec)
+      whole = sec.floor
+      fraction = sec - whole
+      text = Kernel.format("%02d:%02d:%02d", hour, min, whole)
+      fraction.zero? ? text : text << Kernel.format("%.9f", fraction)[1..].sub(/0+\z/, "")
     end
 
     # Fields are validated here; the Time behind them is built on first use.
@@ -22,7 +26,7 @@ module Tomlrb
       @hour = hour.to_i
       @min = min.to_i
       @sec = sec
-      raise ArgumentError, "Invalid Local Time: #{hour}:#{min}:#{sec}" unless @hour < 24 && @min < 60 && sec < 60
+      raise ArgumentError, "Invalid Local Time: #{self}" unless @hour < 24 && @min < 60 && sec < 60
     end
 
     # @param offset see {LocalDateTime#to_time}
@@ -32,17 +36,21 @@ module Tomlrb
     end
 
     def to_s
-      time.strftime("%T") << LocalTime.fraction(@sec)
+      LocalTime.format(@hour, @min, @sec)
     end
 
     def ==(other)
-      other.is_a?(self.class) &&
-        time == other.to_time(0, 1, 1)
+      other.is_a?(self.class) && @hour == other.hour && @min == other.min && @sec == other.seconds
     end
 
     def inspect
       "#<#{self.class}: #{self}>"
     end
+
+    protected
+
+    # Seconds with their fraction; #sec is the whole part only, like Time#sec.
+    def seconds = @sec
 
     private
 

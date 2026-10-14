@@ -134,6 +134,13 @@ describe Tomlrb do
     error = _ { Tomlrb.parse("a = 1\nb = ?\n") }.must_raise(Tomlrb::ParseError)
     _(error.message).must_match(/line 2, column 5/)
   end
+
+  it "counts error columns in characters after multi-byte text" do
+    error = _ { Tomlrb.parse(%(s = "🍒"\nx = ?\n)) }.must_raise(Tomlrb::ParseError)
+    _(error.message).must_match(/line 2, column 5\z/)
+    error = _ { Tomlrb.parse(%(s = "é\\q"\n)) }.must_raise(Tomlrb::ParseError)
+    _(error.message).must_match(/line 1, column 7\z/)
+  end
 end
 
 describe "TOML versions" do

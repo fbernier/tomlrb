@@ -55,15 +55,17 @@ Type signatures for the public API are in [`sig/`](sig/tomlrb.rbs).
 
 ## Benchmark
 
-`ruby benchmarks/bench.rb [file]` compares against [toml-rb](https://github.com/emancu/toml-rb) and [perfect_toml](https://github.com/mame/perfect_toml) when they are installed. It parses `test/example-v0.4.0.toml` unless given a file.
+`ruby benchmarks/bench.rb [file...]` compares against [toml-rb](https://github.com/emancu/toml-rb) and [perfect_toml](https://github.com/mame/perfect_toml) when they are installed. Each iteration parses every given file (`test/example-v0.4.0.toml` by default).
 
-CPU instructions per parse (fewer is better), measured with `perf stat` on CRuby 3.3 without YJIT. YJIT shows the same ratios.
+`ruby [--yjit] benchmarks/matrix.rb` runs one parser over generated workloads, one per input shape (plain, escaped and 1 MB strings, plain and quote-dense multi-line strings, signed and unsigned numbers, floats, inline tables, date-times, many small documents), and reports time, Ruby allocations, peak RSS growth and a digest of the results per workload. `--lib DIR` loads tomlrb from another checkout, so equal digests show that two versions parse alike; `--parser perfect_toml` measures perfect_toml instead. Inputs keep the known encoding code range a string from `File.read` has; `--unknown-coderange` also times the UTF-8 validation of a string whose code range Ruby has not computed.
+
+CPU instructions per parse (fewer is better), measured with `perf stat` on CRuby 3.3 without YJIT. With YJIT tomlrb's lead grows: 2.4-2.7x fewer instructions than perfect_toml and 12-15x fewer than 2.0.4. The crates.io corpus is the first 300 `Cargo.toml` files of a local Cargo registry (`~/.cargo/registry/src/*/*/Cargo.toml`, sorted by path) that all three parsers accept.
 
 | Input | tomlrb | perfect_toml 0.9.1 | tomlrb 2.0.4 |
 |---|---|---|---|
-| `test/example-v0.4.0.toml` (5 KB) | 1.9 M | 3.4 M | 17.7 M |
-| 300 crates.io `Cargo.toml` files (620 KB) | 260 M | 578 M | 3,180 M |
-| rust-lang/rust `Cargo.lock` (158 KB) | 50 M | 123 M | 677 M |
+| `test/example-v0.4.0.toml` (5 KB) | 1.7 M | 3.4 M | 17.7 M |
+| 300 crates.io `Cargo.toml` files (623 KB) | 244 M | 562 M | 3,117 M |
+| rust-lang/rust `Cargo.lock` (158 KB) | 48 M | 122 M | 686 M |
 
 `ruby benchmarks/profile.rb [file]` records a [Vernier](https://github.com/jhawthorn/vernier) profile.
 

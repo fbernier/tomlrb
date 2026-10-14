@@ -3,16 +3,17 @@
 require "strscan"
 
 module Tomlrb
-  # Single-pass TOML 1.0 parser over a StringScanner.
+  # Single-pass TOML 1.1 / 1.0 parser over a StringScanner.
   #
   # Costs that shape the code (CRuby 3.3, instructions): a regex call has about
   # 1000 fixed overhead, an anchored `[class]*` loop then costs ~80 per byte while
   # an unanchored search for a character class costs ~11 per byte, a capture
   # 600-800, a `getbyte` ~190 (~40 under YJIT). So the parser dispatches on bytes
   # through lookup tables, fuses the commonest shapes into one regex (`key =`,
-  # a plain string or integer plus the rest of its line, an array string element
-  # plus its comma), and skips comments by searching for the character that ends
-  # them. Arrays and inline tables use an explicit stack, so nesting depth is
+  # a plain string or integer plus the rest of its line and any blank lines after
+  # it, an array element or inline table value plus its comma), reads date and
+  # time fields as bytes, and skips comments by searching for the character that
+  # ends them. Arrays and inline tables use an explicit stack, so nesting depth is
   # bounded by memory rather than the VM stack. Every regex is linear-time:
   # alternatives start with disjoint characters and repeated groups are atomic or
   # cannot overlap.
@@ -24,11 +25,13 @@ module Tomlrb
     DOTTED = 3          # defined by a dotted key (`a` in `a.b = 1`); only dotted keys may extend it
     ARRAY_OF_TABLES = 4
 
-    UTF_8 = Encoding::UTF_8
-
     CTRL = '\x00-\x08\x0a-\x1f\x7f' # control characters, tab excluded
-    ML_CTRL = '\x00-\x08\x0b-\x1f\x7f' # same, also allowing LF; CR only as part of CRLF
-    EOL_SRC = "[ \\t]*(?:#[^#{CTRL}]*)?(?:\\r?\\n|\\z)"
+    EOL_SRC = "[ \\t]*(?:#[^#{CTRL}]*)?(?:(?:\\r?\\n[ \\t]*)+|\\z)"
+    BARE_KEY_SRC = "[A-Za-z0-9_-]+"
+    TABLE_NAME_SRC = "[ \\t]*(#{BARE_KEY_SRC}(?:\\.#{BARE_KEY_SRC})*)[ \\t]*"
+    PLAIN_BASIC_STRING_SRC = %("([^"\\\\#{CTRL}]*)") # no escapes; captures the content
+    PLAIN_LITERAL_STRING_SRC = "'([^'#{CTRL}]*)'"
+    INTEGER_SRC = "[+-]?(?:0|[1-9](?:_?[0-9])*)"
 
     EOL = /#{EOL_SRC}/
     WHITESPACE = /(?:[ \t\n]|\r\n)+/
@@ -39,62 +42,77 @@ module Tomlrb
     # may contain, so consecutive comment lines cost one call.
     COMMENT_BLOCK_END = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]|\r(?!\n)|\r?\n(?![ \t]*#)/
 
-    BARE_KEY = /[A-Za-z0-9_-]+/
-    KEY_EQUALS = /([A-Za-z0-9_-]+)[ \t]*=[ \t]*/
-    INLINE_KEY_EQUALS = /[ \t]*([A-Za-z0-9_-]+)[ \t]*=[ \t]*/
-    TABLE_HEADER = /\[[ \t]*([A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*)[ \t]*\]#{EOL_SRC}/
-    ARRAY_TABLE_HEADER = /\[\[[ \t]*([A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*)[ \t]*\]\]#{EOL_SRC}/
+    BARE_KEY = /#{BARE_KEY_SRC}/
+    KEY_EQUALS = /(#{BARE_KEY_SRC})[ \t]*=[ \t]*/
+    INLINE_KEY_EQUALS = /[ \t]*(#{BARE_KEY_SRC})[ \t]*=[ \t]*/
+    TABLE_HEADER = /\[#{TABLE_NAME_SRC}\]#{EOL_SRC}/
+    ARRAY_TABLE_HEADER = /\[\[#{TABLE_NAME_SRC}\]\]#{EOL_SRC}/
     TABLE_CLOSE = /\]#{EOL_SRC}/
     ARRAY_TABLE_CLOSE = /\]\]#{EOL_SRC}/
 
-    SIMPLE_BASIC_STRING_EOL = /"([^"\\#{CTRL}]*)"#{EOL_SRC}/
+    SIMPLE_BASIC_STRING_EOL = /#{PLAIN_BASIC_STRING_SRC}#{EOL_SRC}/
     # A plain string array element with its comma and the whitespace after it, or
     # the last element before `]` (closing after a value or after a trailing comma
     # is the same thing, so the loop needs no record of which it was). The leading
     # whitespace is atomic: giving it back a character at a time would rerun the
     # lookahead over the rest of it, quadratic in the run's length.
     ELEMENT_END = '(?>[ \t]*)(?:,[ \t]*(?:\r?\n[ \t]*)?|(?=[ \t\r\n]*\]))'
-    STRING_ELEMENT = /"([^"\\#{CTRL}]*)"#{ELEMENT_END}/
+    STRING_ELEMENT = /#{PLAIN_BASIC_STRING_SRC}#{ELEMENT_END}/
     # The same for an integer; the separator rules out a float or date continuing it.
-    INTEGER_ELEMENT = /([+-]?(?:0|[1-9](?:_?[0-9])*))#{ELEMENT_END}/
+    INTEGER_ELEMENT = /(#{INTEGER_SRC})#{ELEMENT_END}/
     STRING_SEGMENT = /[^"\\#{CTRL}]*/
-    MULTILINE_STRING_SEGMENT = /(?>[^"\\#{ML_CTRL}]+|\r\n)*/
+    # Searched for, not matched: what ends a multi-line basic string's plain run
+    # (three quotes, a backslash, a control character or a lone CR). Single and
+    # double quotes stay inside the run.
+    MULTILINE_STRING_STOP = /"""|[\\\x00-\x08\x0b\x0c\x0e-\x1f\x7f]|\r(?!\n)/
     UNICODE_ESCAPE = /\\(?:u([0-9A-Fa-f]{4})|U([0-9A-Fa-f]{8}))/
     # A backslash ending a line drops the line break and all whitespace after it.
     LINE_ENDING_BACKSLASH = /\\[ \t]*\r?\n(?:[ \t\n]|\r\n)*/
-    LITERAL_STRING = /'([^'#{CTRL}]*)'/
-    LITERAL_STRING_EOL = /'([^'#{CTRL}]*)'#{EOL_SRC}/
-    # Up to two quotes may end the content: `'''a'''''` is `a''`.
-    MULTILINE_LITERAL_STRING = /'''((?>[^'#{ML_CTRL}]+|\r\n|'(?!''))*)('{0,2})'''/
+    LITERAL_STRING = /#{PLAIN_LITERAL_STRING_SRC}/
+    LITERAL_STRING_EOL = /#{PLAIN_LITERAL_STRING_SRC}#{EOL_SRC}/
+    # The same for a multi-line literal string, which has no escapes.
+    MULTILINE_LITERAL_STRING_STOP = /'''|[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]|\r(?!\n)/
 
-    INTEGER_SRC = "[+-]?(?:0|[1-9](?:_?[0-9])*)"
-    FLOAT_SRC = "#{INTEGER_SRC}(?:\\.[0-9](?:_?[0-9])*(?:[eE][+-]?[0-9](?:_?[0-9])*)?|[eE][+-]?[0-9](?:_?[0-9])*)"
+    # What follows a float's integer part: a fraction, an exponent, or both.
+    FLOAT_TAIL_SRC = "(?:\\.[0-9](?:_?[0-9])*(?:[eE][+-]?[0-9](?:_?[0-9])*)?|[eE][+-]?[0-9](?:_?[0-9])*)"
+    FLOAT_SRC = "#{INTEGER_SRC}#{FLOAT_TAIL_SRC}"
     INTEGER = /#{INTEGER_SRC}/
     INTEGER_EOL = /(#{INTEGER_SRC})#{EOL_SRC}/
-    FLOAT = /#{FLOAT_SRC}/
+    FLOAT_TAIL = /#{FLOAT_TAIL_SRC}/
     FLOAT_EOL = /(#{FLOAT_SRC})#{EOL_SRC}/
+    # A plain string, integer or boolean inline table value together with its
+    # comma, or up to the `}` after it; the caller tells which by the last byte
+    # consumed. A float, date or anything else continuing the value fails it.
+    INLINE_VALUE_END = '(?>[ \t]*)(?:,|(?=\}))'
+    INLINE_STRING = /#{PLAIN_BASIC_STRING_SRC}#{INLINE_VALUE_END}/
+    INLINE_INTEGER = /(#{INTEGER_SRC})#{INLINE_VALUE_END}/
+    INLINE_TRUE = /true#{INLINE_VALUE_END}/
+    INLINE_FALSE = /false#{INLINE_VALUE_END}/
     NON_DECIMAL_INTEGER = /0(?:x[0-9A-Fa-f](?:_?[0-9A-Fa-f])*|o[0-7](?:_?[0-7])*|b[01](?:_?[01])*)/
     FLOAT_KEYWORD = /[+-]?(?:inf|nan)/
     TRUE_KEYWORD = /true/
     FALSE_KEYWORD = /false/
     TRUE_EOL = /true#{EOL_SRC}/
     FALSE_EOL = /false#{EOL_SRC}/
-    TIME_SRC_V1_0 = '(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)'
-    TIME_SRC_V1_1 = '(\d{2}):(\d{2})(?::(\d{2}(?:\.\d+)?))?' # seconds optional
+    # No captures: the fields sit at fixed offsets from the match start and are
+    # read as bytes (see #datetime), saving a String and 600-800 instructions each.
+    TIME_SRC_V1_0 = '\d{2}:\d{2}:\d{2}(?:\.\d+)?'
+    TIME_SRC_V1_1 = '\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?' # seconds optional
     LOCAL_TIME_V1_0 = /#{TIME_SRC_V1_0}/
     LOCAL_TIME_V1_1 = /#{TIME_SRC_V1_1}/
-    DATETIME_V1_0 = /(\d{4})-(\d{2})-(\d{2})(?:[Tt ]#{TIME_SRC_V1_0}([Zz]|[-+]\d{2}:\d{2})?)?/
-    DATETIME_V1_1 = /(\d{4})-(\d{2})-(\d{2})(?:[Tt ]#{TIME_SRC_V1_1}([Zz]|[-+]\d{2}:\d{2})?)?/
+    DATETIME_V1_0 = /\d{4}-\d{2}-\d{2}(?:[Tt ]#{TIME_SRC_V1_0}(?:[Zz]|[-+]\d{2}:\d{2})?)?/
+    DATETIME_V1_1 = /\d{4}-\d{2}-\d{2}(?:[Tt ]#{TIME_SRC_V1_1}(?:[Zz]|[-+]\d{2}:\d{2})?)?/
 
-    ESCAPE_CHARS_V1_0 = {"b" => "\b", "t" => "\t", "n" => "\n", "f" => "\f", "r" => "\r", '"' => '"', "\\" => "\\"}.freeze
-    ESCAPE_CHARS_V1_1 = ESCAPE_CHARS_V1_0.merge("e" => "\e").freeze
-    # Escape character byte -> its value.
-    ESCAPES_V1_0, ESCAPES_V1_1 = [ESCAPE_CHARS_V1_0, ESCAPE_CHARS_V1_1].map do |chars|
-      Array.new(256).tap { |table| chars.each { |char, value| table[char.ord] = value } }.freeze
+    def self.byte_table(classes)
+      table = Array.new(256)
+      classes.each { |chars, klass| chars.each_byte { |b| table[b] = klass } }
+      table.freeze
     end
+
+    # Escape character byte -> its value.
+    ESCAPES_V1_0 = byte_table("b" => "\b", "t" => "\t", "n" => "\n", "f" => "\f", "r" => "\r", '"' => '"', "\\" => "\\")
+    ESCAPES_V1_1 = ESCAPES_V1_0.dup.tap { |table| table["e".ord] = "\e" }.freeze
     HEX_ESCAPE = /\\x([0-9A-Fa-f]{2})/
-    # Content for the 0-2 quotes allowed right before a closing `"""`.
-    TRAILING_QUOTES = ["", '"', '""'].freeze
 
     # What differs between the TOML versions read. 1.1 only relaxes 1.0: a valid
     # 1.0 document means the same under either, 1.0 just rejects more.
@@ -130,21 +148,22 @@ module Tomlrb
     DQUOTE = '"'.ord
     SQUOTE = "'".ord
     LOWER_E = "e".ord
+    PLUS = "+".ord
+    UPPER_Z = "Z".ord
+    LOWER_Z = "z".ord
     UPPER_E = "E".ord
     LOWER_I = "i".ord
     LOWER_N = "n".ord
+    LOWER_T = "t".ord
+    LOWER_F = "f".ord
     NON_DECIMAL_BASES = {"x".ord => 16, "o".ord => 8, "b".ord => 2}.freeze
 
-    def self.byte_table(classes)
-      table = Array.new(256)
-      classes.each { |chars, klass| chars.each_byte { |b| table[b] = klass } }
-      table.freeze
-    end
-
-    # What a statement starting with this byte is; anything else is a key.
-    STATEMENT_START = byte_table(" \t\n\r#" => :gap, "[" => :header)
     GAP_START = byte_table(" \t\n\r#" => true)
     LINE_BREAK_OR_COMMENT = byte_table("\n\r#" => true)
+    # Regex for an inline table value that can be fused with its separator.
+    INLINE_SCALAR = byte_table('"' => INLINE_STRING, "0123456789+-" => INLINE_INTEGER, "t" => INLINE_TRUE,
+      "f" => INLINE_FALSE)
+    NUMBER_START = byte_table("0123456789+-" => true)
     VALUE_START = byte_table(
       '"' => :basic_string, "'" => :literal_string, "0123456789" => :digit, "+-" => :sign,
       "t" => :true_keyword, "f" => :false_keyword, "in" => :inf_or_nan, "[" => :array, "{" => :inline_table
@@ -155,8 +174,8 @@ module Tomlrb
       spec = SPECS.fetch(version) do
         raise ArgumentError, "Unsupported TOML version #{version.inspect} (supported: #{SPECS.keys.join(", ")})"
       end
-      if src.encoding != UTF_8
-        src = (src.encoding == Encoding::BINARY) ? src.dup.force_encoding(UTF_8) : src.encode(UTF_8)
+      if src.encoding != Encoding::UTF_8
+        src = (src.encoding == Encoding::BINARY) ? src.dup.force_encoding(Encoding::UTF_8) : src.encode(Encoding::UTF_8)
       end
       raise ParseError, "Invalid UTF-8 in document" unless src.valid_encoding?
 
@@ -177,11 +196,11 @@ module Tomlrb
       ss = @ss
       src = @src
       while (byte = src.getbyte(ss.pos))
-        case STATEMENT_START[byte]
-        when :gap then skip_gap
-        when :header then header
-        else key_value
+        if GAP_START[byte]
+          byte = skip_gap
+          break unless byte
         end
+        (byte == LBRACKET) ? header : key_value
       end
       @root
     end
@@ -223,6 +242,10 @@ module Tomlrb
           return ss[1].to_i if ss.skip(INTEGER_EOL)
           return ss[1].to_f if ss.skip(FLOAT_EOL)
         end
+      when :sign
+        # `+inf` and `-nan` fail both and fall through to `scalar`.
+        return ss[1].to_i if ss.skip(INTEGER_EOL)
+        return ss[1].to_f if ss.skip(FLOAT_EOL)
       when :true_keyword
         return true if ss.skip(TRUE_EOL)
       when :false_keyword
@@ -242,7 +265,8 @@ module Tomlrb
       array = @src.getbyte(ss.pos + 1) == LBRACKET
       if ss.skip(array ? ARRAY_TABLE_HEADER : TABLE_HEADER)
         # Frozen only where a table is created: most header keys just look up an existing one.
-        keys = ss[1].split(".")
+        name = ss[1]
+        keys = name.include?(".") ? name.split(".") : [name]
         keys.map!(&:to_sym) if @symbolize_keys
       else
         ss.pos += array ? 2 : 1
@@ -343,13 +367,14 @@ module Tomlrb
     end
 
     # Parses the array or inline table opening at the current position. Enclosing
-    # containers are kept on `stack` as (container, in_array, pending keys) triples.
+    # containers are kept on `stack` as (container, pending keys) pairs, keys nil
+    # for an array; it stays nil for a flat container, the common case.
     # `expecting_value` is true right after an opening bracket or a comma. In TOML 1.0
     # an inline table may only close there when it is still empty (no trailing comma).
     def container(byte)
       ss = @ss
       src = @src
-      stack = []
+      stack = nil
       ss.pos += 1
       in_array = byte == LBRACKET
       current = in_array ? [] : {}
@@ -366,13 +391,13 @@ module Tomlrb
                 current << ss[1]
                 next
               end
-            elsif VALUE_START[byte || 0] == :digit && ss.skip(INTEGER_ELEMENT)
+            elsif NUMBER_START[byte || 0] && ss.skip(INTEGER_ELEMENT)
               current << ss[1].to_i
               next
             end
             if byte != RBRACKET
               if byte == LBRACKET || byte == LBRACE
-                stack.push(current, true, nil)
+                (stack ||= []).push(current, nil)
                 ss.pos += 1
                 in_array = byte == LBRACKET
                 current = in_array ? [] : {}
@@ -401,15 +426,27 @@ module Tomlrb
             key = @symbolize_keys ? key.to_sym : key.freeze
             byte = src.getbyte(ss.pos)
             if byte == LBRACKET || byte == LBRACE
-              stack.push(current, false, [key])
+              (stack ||= []).push(current, [key])
               ss.pos += 1
               in_array = byte == LBRACKET
               current = in_array ? [] : {}
               next
             end
             conflict([key]) if current.key?(key)
-            current[key] = scalar(byte)
-            expecting_value = false
+            if (fused = INLINE_SCALAR[byte || 0]) && ss.skip(fused)
+              current[key] =
+                case byte
+                when DQUOTE then ss[1]
+                when LOWER_T then true
+                when LOWER_F then false
+                else ss[1].to_i
+                end
+              # The separator either took a comma or stopped before `}`.
+              expecting_value = src.getbyte(ss.pos - 1) == COMMA
+            else
+              current[key] = scalar(byte)
+              expecting_value = false
+            end
             next
           end
           byte = skip_spaces
@@ -420,7 +457,7 @@ module Tomlrb
               error("Expected '=' in inline table") unless ss.skip(EQUALS)
               byte = src.getbyte(ss.pos)
               if byte == LBRACKET || byte == LBRACE
-                stack.push(current, false, keys)
+                (stack ||= []).push(current, keys)
                 ss.pos += 1
                 in_array = byte == LBRACKET
                 current = in_array ? [] : {}
@@ -442,12 +479,11 @@ module Tomlrb
         # Close the current container and hand it to its parent.
         ss.pos += 1
         value = current
-        return value if stack.empty?
+        return value if stack.nil? || stack.empty?
 
         keys = stack.pop
-        in_array = stack.pop
         current = stack.pop
-        if in_array
+        if (in_array = keys.nil?)
           current << value
         else
           define(current, keys, value)
@@ -457,7 +493,7 @@ module Tomlrb
     end
 
     def basic_string
-      triple_quote?(DQUOTE) ? multiline_basic_string : single_line_basic_string
+      triple_quote?(DQUOTE) ? multiline_string(DQUOTE, MULTILINE_STRING_STOP) : single_line_basic_string
     end
 
     # Reads plain runs and escapes straight off the scanner: one match per run and
@@ -482,8 +518,13 @@ module Tomlrb
       end
     end
 
-    # Same scheme; quotes are counted to tell content quotes from the closing `"""`.
-    def multiline_basic_string
+    # The multi-line string, basic (`quote` is DQUOTE) or literal, opening at the
+    # current position. Plain runs, quotes short of three included, are found by
+    # searching for what ends them: unlike an anchored match, the search neither
+    # walks every byte through the regex VM nor grows Onigmo's stack with the run
+    # (48 MB for a 1 MB string). Up to two quotes before the closing three are
+    # content (`'''a'''''` is `a''`).
+    def multiline_string(quote, stop)
       ss = @ss
       src = @src
       pos = ss.pos + 3
@@ -496,27 +537,32 @@ module Tomlrb
       ss.pos = pos
       out = nil
       while true
-        segment = ss.scan(MULTILINE_STRING_SEGMENT)
-        out = out ? out << segment : segment
-        pos = ss.pos
-        byte = src.getbyte(pos)
-        if byte == DQUOTE
-          quotes = 1
-          quotes += 1 while src.getbyte(pos + quotes) == DQUOTE
-          if quotes < 3
-            out << TRAILING_QUOTES[quotes]
-            ss.pos = pos + quotes
-          else
-            extra = (quotes > 5) ? 2 : quotes - 3
-            ss.pos = pos + 3 + extra
-            return out << TRAILING_QUOTES[extra]
-          end
-        elsif byte == BACKSLASH
-          append_escape(out, true)
-        else
-          error("Unterminated multi-line string")
+        start = ss.pos
+        unless ss.skip_until(stop)
+          ss.terminate
+          unterminated_multiline_string(quote)
         end
+        pos = ss.pos - ss.matched_size
+        byte = src.getbyte(pos)
+        if byte == quote
+          pos += 1 if src.getbyte(pos + 3) == quote
+          pos += 1 if src.getbyte(pos + 3) == quote
+        end
+        segment = src.byteslice(start, pos - start)
+        out = out ? out << segment : segment
+        if byte == quote
+          ss.pos = pos + 3
+          return out
+        end
+
+        ss.pos = pos
+        unterminated_multiline_string(quote) unless byte == BACKSLASH
+        append_escape(out, true)
       end
+    end
+
+    def unterminated_multiline_string(quote)
+      error((quote == DQUOTE) ? "Unterminated multi-line string" : "Unterminated multi-line literal string")
     end
 
     # Appends the escape sequence at the current backslash to `out`.
@@ -527,9 +573,9 @@ module Tomlrb
         ss.pos += 2
         out << char
       elsif ss.skip(UNICODE_ESCAPE)
-        out << (ss[1] || ss[2]).to_i(16).chr(UTF_8)
+        out << (ss[1] || ss[2]).to_i(16).chr(Encoding::UTF_8)
       elsif @hex_escapes && ss.skip(HEX_ESCAPE)
-        out << ss[1].to_i(16).chr(UTF_8)
+        out << ss[1].to_i(16).chr(Encoding::UTF_8)
       elsif !(multiline && ss.skip(LINE_ENDING_BACKSLASH))
         error("Invalid escape sequence")
       end
@@ -538,8 +584,7 @@ module Tomlrb
     def literal_string
       ss = @ss
       if triple_quote?(SQUOTE)
-        error("Unterminated multi-line literal string") unless ss.skip(MULTILINE_LITERAL_STRING)
-        trim_leading_newline(multiline_content(ss[1], ss[2]))
+        multiline_string(SQUOTE, MULTILINE_LITERAL_STRING_STOP)
       elsif ss.skip(LITERAL_STRING)
         ss[1]
       else
@@ -550,21 +595,6 @@ module Tomlrb
     def triple_quote?(quote)
       pos = @ss.pos
       @src.getbyte(pos + 1) == quote && @src.getbyte(pos + 2) == quote
-    end
-
-    # Content plus the up to two quotes that end it (`'''a'''''` is `a''`).
-    def multiline_content(content, quotes)
-      quotes.empty? ? content : content << quotes
-    end
-
-    def trim_leading_newline(str)
-      if str.start_with?("\n")
-        str[1..]
-      elsif str.start_with?("\r\n")
-        str[2..]
-      else
-        str
-      end
     end
 
     # LOCAL_TIME needs `HH:` and DATETIME `YYYY-`; the separator byte decides
@@ -580,16 +610,17 @@ module Tomlrb
       ss = @ss
       pos = ss.pos
       if @src.getbyte(pos + 2) == COLON && ss.skip(@local_time)
-        LocalTime.new(ss[1], ss[2], seconds(ss[3]))
+        LocalTime.new(two_digits(pos), two_digits(pos + 3), seconds(pos + 5, ss.pos))
       elsif @src.getbyte(pos + 4) == DASH && ss.skip(@datetime)
-        datetime(*ss.values_at(1, 2, 3, 4, 5, 6, 7))
+        datetime(pos, ss.pos)
       else
         number
       end
     end
 
     # INTEGER runs first because most numbers are integers; a following `.`, `e`
-    # or `E` means it only matched the integer part of a FLOAT.
+    # or `E` means it only matched the integer part of a float, whose tail is then
+    # scanned from there. Nothing is materialized until the kind is known.
     def number
       ss = @ss
       src = @src
@@ -598,12 +629,15 @@ module Tomlrb
         text = ss.scan(NON_DECIMAL_INTEGER) || error("Invalid integer")
         return text.to_i(base)
       end
-      text = ss.scan(INTEGER) || error("Invalid number")
+      error("Invalid number") unless ss.skip(INTEGER)
       next_byte = src.getbyte(ss.pos)
-      return text.to_i unless next_byte == DOT || next_byte == LOWER_E || next_byte == UPPER_E
+      return ss.matched.to_i unless next_byte == DOT || next_byte == LOWER_E || next_byte == UPPER_E
 
-      ss.pos = pos
-      (ss.scan(FLOAT) || error("Invalid float")).to_f
+      unless ss.skip(FLOAT_TAIL)
+        ss.pos = pos
+        error("Invalid float")
+      end
+      src.byteslice(pos, ss.pos - pos).to_f
     end
 
     def float_keyword
@@ -615,35 +649,53 @@ module Tomlrb
       end
     end
 
-    # Fields are range-checked as Integers before Time.new, which would otherwise
-    # silently roll an out-of-range day or 24:00:00 over.
-    def datetime(year, month, day, hour, min, sec, offset)
-      return LocalDate.new(year, month, day) if hour.nil?
-      return LocalDateTime.new(year, month, day, hour, min, seconds(sec)) if offset.nil?
+    # The date-time matched from `pos` to `stop`. Fields are range-checked as
+    # Integers before Time.new, which would otherwise silently roll an
+    # out-of-range day or 24:00:00 over.
+    def datetime(pos, stop)
+      src = @src
+      year = two_digits(pos) * 100 + two_digits(pos + 2)
+      month = two_digits(pos + 5)
+      day = two_digits(pos + 8)
+      return LocalDate.new(year, month, day) if stop == pos + 10
 
-      year = year.to_i
-      month = month.to_i
-      day = day.to_i
-      hour = hour.to_i
-      min = min.to_i
-      sec = seconds(sec)
-      unless LocalDate.valid_date?(year, month, day) && hour < 24 && min < 60 && sec < 60
-        raise ArgumentError, "Invalid Offset Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}#{offset}"
+      hour = two_digits(pos + 11)
+      min = two_digits(pos + 14)
+      last = src.getbyte(stop - 1)
+      if last == UPPER_Z || last == LOWER_Z
+        time_end = stop - 1
+        offset = 0 # the same Time as "+00:00", without parsing it
+      elsif (sign = src.getbyte(stop - 6)) == PLUS || sign == DASH
+        time_end = stop - 6
+        offset = src.byteslice(time_end, 6)
+      else
+        return LocalDateTime.new(year, month, day, hour, min, seconds(pos + 16, stop))
       end
 
-      Time.new(year, month, day, hour, min, sec, (offset == "Z" || offset == "z") ? "+00:00" : offset)
+      sec = seconds(pos + 16, time_end)
+      unless LocalDate.valid_date?(year, month, day) && hour < 24 && min < 60 && sec < 60
+        raise ArgumentError, "Invalid Offset Date-Time: #{src.byteslice(pos, stop - pos)}"
+      end
+
+      Time.new(year, month, day, hour, min, sec, offset)
     end
 
-    # Fractional seconds are exact (`56.123` stays 56123/1000; a Float would make it
-    # 56.122999...); whole seconds stay Integers, which Time handles fastest. TOML 1.1
-    # may leave seconds out.
-    def seconds(text)
-      if text.nil?
+    def two_digits(pos)
+      src = @src
+      src.getbyte(pos) * 10 + src.getbyte(pos + 1) - 528 # "00" is 48 * 10 + 48
+    end
+
+    # Seconds of a time whose minutes end at `pos` and which ends at `stop`: none
+    # (TOML 1.1 `hh:mm`), `:ss`, or `:ss.fraction`. Fractions are exact (`56.123`
+    # stays 56123/1000; a Float would make it 56.122999...); whole seconds stay
+    # Integers, which Time handles fastest.
+    def seconds(pos, stop)
+      if stop == pos
         0
-      elsif text.length == 2
-        text.to_i
+      elsif stop == pos + 3
+        two_digits(pos + 1)
       else
-        Rational(text)
+        Rational(@src.byteslice(pos + 1, stop - pos - 1))
       end
     end
 
@@ -731,11 +783,13 @@ module Tomlrb
       raise ParseError, "Key #{keys.join(".")} is already defined"
     end
 
+    # Columns count characters; the scanner position is a byte offset.
     def error(message)
       pos = @ss.pos
       before = @src.byteslice(0, pos)
-      line_start = before.rindex("\n")
-      column = pos - (line_start ? line_start + 1 : 0) + 1
+      line_start = before.byterindex("\n")
+      line_start = line_start ? line_start + 1 : 0
+      column = before.byteslice(line_start, pos - line_start).length + 1
       raise ParseError, "#{message} at line #{before.count("\n") + 1}, column #{column}"
     end
   end

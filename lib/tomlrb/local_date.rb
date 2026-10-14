@@ -21,7 +21,7 @@ module Tomlrb
       @year = year.to_i
       @month = month.to_i
       @day = day.to_i
-      raise ArgumentError, "Invalid Local Date: #{year}-#{month}-#{day}" unless LocalDate.valid_date?(@year, @month, @day)
+      raise ArgumentError, "Invalid Local Date: #{self}" unless LocalDate.valid_date?(@year, @month, @day)
     end
 
     # @param offset see {LocalDateTime#to_time}
@@ -37,8 +37,7 @@ module Tomlrb
     end
 
     def ==(other)
-      other.is_a?(self.class) &&
-        to_time == other.to_time
+      other.is_a?(self.class) && @year == other.year && @month == other.month && @day == other.day
     end
 
     def inspect

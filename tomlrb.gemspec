@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["Francois Bernier"]
   spec.email = ["frankbernier@gmail.com"]
 
-  spec.summary = "A fast, pure-Ruby TOML 1.0 parser"
-  spec.description = "Parses TOML 1.0 documents into Ruby Hashes. Pure Ruby, no runtime dependencies, " \
+  spec.summary = "A fast, pure-Ruby TOML 1.1 and 1.0 parser"
+  spec.description = "Parses TOML 1.1 and 1.0 documents into Ruby Hashes. Pure Ruby, no runtime dependencies, " \
                      "checked against the official toml-test suite."
   spec.homepage = "https://github.com/fbernier/tomlrb"
   spec.license = "MIT"

@@ -58,8 +58,8 @@ module Tomlrb
   end
 
   class LocalTime
-    # `.` and the digits of a fractional second count, or "" when whole.
-    def self.fraction: (Numeric seconds) -> String
+    # `hh:mm:ss`, plus `.` and the fraction digits if `sec` has any.
+    def self.format: (Integer hour, Integer min, Numeric sec) -> String
 
     def initialize: (int | String hour, int | String min, Numeric sec) -> void
     def hour: () -> Integer
