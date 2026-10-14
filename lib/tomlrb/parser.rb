@@ -79,14 +79,38 @@ module Tomlrb
     FALSE_KEYWORD = /false/
     TRUE_EOL = /true#{EOL_SRC}/
     FALSE_EOL = /false#{EOL_SRC}/
-    DATETIME = /(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)([Zz]|[-+]\d{2}:\d{2})?)?/
-    LOCAL_TIME = /(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)/
+    TIME_SRC_V1_0 = '(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)'
+    TIME_SRC_V1_1 = '(\d{2}):(\d{2})(?::(\d{2}(?:\.\d+)?))?' # seconds optional
+    LOCAL_TIME_V1_0 = /#{TIME_SRC_V1_0}/
+    LOCAL_TIME_V1_1 = /#{TIME_SRC_V1_1}/
+    DATETIME_V1_0 = /(\d{4})-(\d{2})-(\d{2})(?:[Tt ]#{TIME_SRC_V1_0}([Zz]|[-+]\d{2}:\d{2})?)?/
+    DATETIME_V1_1 = /(\d{4})-(\d{2})-(\d{2})(?:[Tt ]#{TIME_SRC_V1_1}([Zz]|[-+]\d{2}:\d{2})?)?/
 
-    ESCAPE_CHARS = {"b" => "\b", "t" => "\t", "n" => "\n", "f" => "\f", "r" => "\r", '"' => '"', "\\" => "\\"}.freeze
+    ESCAPE_CHARS_V1_0 = {"b" => "\b", "t" => "\t", "n" => "\n", "f" => "\f", "r" => "\r", '"' => '"', "\\" => "\\"}.freeze
+    ESCAPE_CHARS_V1_1 = ESCAPE_CHARS_V1_0.merge("e" => "\e").freeze
     # Escape character byte -> its value.
-    SIMPLE_ESCAPES = Array.new(256).tap { |table| ESCAPE_CHARS.each { |char, value| table[char.ord] = value } }.freeze
+    ESCAPES_V1_0, ESCAPES_V1_1 = [ESCAPE_CHARS_V1_0, ESCAPE_CHARS_V1_1].map do |chars|
+      Array.new(256).tap { |table| chars.each { |char, value| table[char.ord] = value } }.freeze
+    end
+    HEX_ESCAPE = /\\x([0-9A-Fa-f]{2})/
     # Content for the 0-2 quotes allowed right before a closing `"""`.
     TRAILING_QUOTES = ["", '"', '""'].freeze
+
+    # What differs between the TOML versions read. 1.1 only relaxes 1.0: a valid
+    # 1.0 document means the same under either, 1.0 just rejects more.
+    Spec = Data.define(
+      :local_time,     # seconds required in 1.0, optional in 1.1
+      :datetime,       # likewise
+      :escapes,        # escape character byte -> its value (1.1 adds \e)
+      :hex_escapes,    # \xHH (1.1)
+      :inline_newlines # newlines, comments and a trailing comma in inline tables (1.1)
+    )
+    SPECS = {
+      "1.0" => Spec.new(local_time: LOCAL_TIME_V1_0, datetime: DATETIME_V1_0, escapes: ESCAPES_V1_0,
+        hex_escapes: false, inline_newlines: false),
+      "1.1" => Spec.new(local_time: LOCAL_TIME_V1_1, datetime: DATETIME_V1_1, escapes: ESCAPES_V1_1,
+        hex_escapes: true, inline_newlines: true)
+    }.freeze
 
     LBRACKET = "[".ord
     RBRACKET = "]".ord
@@ -120,12 +144,17 @@ module Tomlrb
     # What a statement starting with this byte is; anything else is a key.
     STATEMENT_START = byte_table(" \t\n\r#" => :gap, "[" => :header)
     GAP_START = byte_table(" \t\n\r#" => true)
+    LINE_BREAK_OR_COMMENT = byte_table("\n\r#" => true)
     VALUE_START = byte_table(
       '"' => :basic_string, "'" => :literal_string, "0123456789" => :digit, "+-" => :sign,
       "t" => :true_keyword, "f" => :false_keyword, "in" => :inf_or_nan, "[" => :array, "{" => :inline_table
     )
 
-    def initialize(src, **options)
+    # @param version ["1.1", "1.0"] the TOML spec to follow; "1.0" also rejects what 1.1 added
+    def initialize(src, version: "1.1", symbolize_keys: false, **)
+      spec = SPECS.fetch(version) do
+        raise ArgumentError, "Unsupported TOML version #{version.inspect} (supported: #{SPECS.keys.join(", ")})"
+      end
       if src.encoding != UTF_8
         src = (src.encoding == Encoding::BINARY) ? src.dup.force_encoding(UTF_8) : src.encode(UTF_8)
       end
@@ -133,7 +162,12 @@ module Tomlrb
 
       @src = src
       @ss = StringScanner.new(src)
-      @symbolize_keys = options[:symbolize_keys] ? true : false
+      @symbolize_keys = symbolize_keys ? true : false
+      @local_time = spec.local_time
+      @datetime = spec.datetime
+      @escapes = spec.escapes
+      @hex_escapes = spec.hex_escapes
+      @inline_newlines = spec.inline_newlines
       @root = {}
       @current = @root
       @kinds = {}.compare_by_identity
@@ -310,8 +344,8 @@ module Tomlrb
 
     # Parses the array or inline table opening at the current position. Enclosing
     # containers are kept on `stack` as (container, in_array, pending keys) triples.
-    # `expecting_value` is true right after an opening bracket or a comma; an inline
-    # table may only close there when it is still empty (no trailing comma in 1.0).
+    # `expecting_value` is true right after an opening bracket or a comma. In TOML 1.0
+    # an inline table may only close there when it is still empty (no trailing comma).
     def container(byte)
       ss = @ss
       src = @src
@@ -356,6 +390,12 @@ module Tomlrb
             error("Expected , or ] in array")
           end
         else
+          # TOML 1.1 lets inline tables span lines. Plain spaces are left to the
+          # cheaper paths below; skip_gap only runs before a line break or comment.
+          if @inline_newlines
+            byte = src.getbyte(ss.pos)
+            skip_gap if byte && LINE_BREAK_OR_COMMENT[byte]
+          end
           if expecting_value && ss.skip(INLINE_KEY_EQUALS)
             key = ss[1]
             key = @symbolize_keys ? key.to_sym : key.freeze
@@ -373,8 +413,9 @@ module Tomlrb
             next
           end
           byte = skip_spaces
+          byte = skip_gap if @inline_newlines && byte && LINE_BREAK_OR_COMMENT[byte]
           if expecting_value
-            unless byte == RBRACE && current.empty?
+            if byte != RBRACE || !(@inline_newlines || current.empty?)
               keys = key_path
               error("Expected '=' in inline table") unless ss.skip(EQUALS)
               byte = src.getbyte(ss.pos)
@@ -482,11 +523,13 @@ module Tomlrb
     def append_escape(out, multiline)
       ss = @ss
       byte = @src.getbyte(ss.pos + 1)
-      if byte && (char = SIMPLE_ESCAPES[byte])
+      if byte && (char = @escapes[byte])
         ss.pos += 2
         out << char
       elsif ss.skip(UNICODE_ESCAPE)
         out << (ss[1] || ss[2]).to_i(16).chr(UTF_8)
+      elsif @hex_escapes && ss.skip(HEX_ESCAPE)
+        out << ss[1].to_i(16).chr(UTF_8)
       elsif !(multiline && ss.skip(LINE_ENDING_BACKSLASH))
         error("Invalid escape sequence")
       end
@@ -536,9 +579,9 @@ module Tomlrb
     def digit_value
       ss = @ss
       pos = ss.pos
-      if @src.getbyte(pos + 2) == COLON && ss.skip(LOCAL_TIME)
+      if @src.getbyte(pos + 2) == COLON && ss.skip(@local_time)
         LocalTime.new(ss[1], ss[2], seconds(ss[3]))
-      elsif @src.getbyte(pos + 4) == DASH && ss.skip(DATETIME)
+      elsif @src.getbyte(pos + 4) == DASH && ss.skip(@datetime)
         datetime(*ss.values_at(1, 2, 3, 4, 5, 6, 7))
       else
         number
@@ -592,9 +635,16 @@ module Tomlrb
     end
 
     # Fractional seconds are exact (`56.123` stays 56123/1000; a Float would make it
-    # 56.122999...); whole seconds stay Integers, which Time handles fastest.
+    # 56.122999...); whole seconds stay Integers, which Time handles fastest. TOML 1.1
+    # may leave seconds out.
     def seconds(text)
-      (text.length == 2) ? text.to_i : Rational(text)
+      if text.nil?
+        0
+      elsif text.length == 2
+        text.to_i
+      else
+        Rational(text)
+      end
     end
 
     # Tables

@@ -3,9 +3,14 @@
 Breaking changes (release as 3.0.0):
 
 * Require Ruby 3.3 or later
+* Read documents as TOML 1.1 by default. Every valid TOML 1.0 document parses unchanged; 1.1 additionally accepts `\e` and `\xHH` escapes, times without seconds, and inline tables that span lines, contain comments or end with a comma. `version: "1.0"` keeps rejecting those
 * Fractional seconds are exact `Rational`s instead of `Float`s: `Time`, `LocalDateTime` and `LocalTime` values carry `56.123`, not `56.122999…`
 * Remove `Tomlrb::Scanner`, `Tomlrb::Handler`, `Tomlrb::StringUtils`, `Tomlrb::GeneratedParser`, `Tomlrb::Keys` and `Tomlrb::Key`; `Tomlrb::Parser.new` now takes the document string. Key redefinitions raise `Tomlrb::ParseError` as before
 * `require "tomlrb"` no longer loads `time` and `stringio`
+
+Features:
+
+* TOML 1.1 support, selected with `version: "1.1"` (default) or `"1.0"`
 
 Security:
 
@@ -15,7 +20,7 @@ Performance:
 
 * Replace the Racc grammar with a hand-written single-pass parser; Racc is no longer used. Parsing executes 1.8-2.5x fewer instructions than perfect_toml 0.9.1 and 9-13x fewer than 2.0.4, interpreted or with YJIT
 
-Conformance (all 679 TOML 1.0 cases of toml-test 2.2.0 now pass):
+Conformance (every TOML 1.0 and 1.1 case of toml-test 2.2.0 passes):
 
 * An escaped backslash right before a closing `"""` (`"""x\\"""`) ends the string
 * Reject a carriage return not followed by a line feed in multi-line strings, and trim a CRLF (not just LF) right after an opening `"""` or `'''`

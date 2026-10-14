@@ -74,9 +74,9 @@ describe Tomlrb do
     _ { Tomlrb.parse("{a = 1}\n") }.must_raise(Tomlrb::ParseError)
   end
 
-  it "allows newlines inside arrays but not directly inside inline tables" do
-    _(Tomlrb.parse("a = {b = [1,\n# c\n2]}\n")).must_equal({"a" => {"b" => [1, 2]}})
-    _ { Tomlrb.parse("a = {b = 1,\nc = 2}\n") }.must_raise(Tomlrb::ParseError)
+  it "allows newlines inside arrays, and in TOML 1.0 not directly inside inline tables" do
+    _(Tomlrb.parse("a = {b = [1,\n# c\n2]}\n", version: "1.0")).must_equal({"a" => {"b" => [1, 2]}})
+    _ { Tomlrb.parse("a = {b = 1,\nc = 2}\n", version: "1.0") }.must_raise(Tomlrb::ParseError)
   end
 
   it "parses deeply nested inline tables and arrays in linear time" do
@@ -126,13 +126,44 @@ describe Tomlrb do
   it "decodes escapes in single-line and multi-line basic strings" do
     toml = %(a = "t\\tq\\"\\u00e9\\U0001F600\\\\"\nb = """x \\\n   y \\"""\nc"""\n)
     _(Tomlrb.parse(toml)).must_equal({"a" => "t\tq\"é😀\\", "b" => "x y \"\"\"\nc"})
-    _ { Tomlrb.parse(%(a = "\\e"\n)) }.must_raise(Tomlrb::ParseError)
+    _ { Tomlrb.parse(%(a = "\\q"\n)) }.must_raise(Tomlrb::ParseError)
     _(Tomlrb.parse(%(a = """x\\\\"""\n))).must_equal({"a" => "x\\"})
   end
 
   it "reports the line and column of a syntax error" do
     error = _ { Tomlrb.parse("a = 1\nb = ?\n") }.must_raise(Tomlrb::ParseError)
     _(error.message).must_match(/line 2, column 5/)
+  end
+end
+
+describe "TOML versions" do
+  {
+    "\\e and \\xHH escapes" => [%(s = "\\e[\\x41\\x00"\n), {"s" => "\e[A\u0000"}],
+    "times without seconds" => ["t = 07:32\nd = 1979-05-27T07:32Z\nl = 1979-05-27 07:32\n",
+      {"t" => Tomlrb::LocalTime.new(7, 32, 0), "d" => Time.new(1979, 5, 27, 7, 32, 0, "+00:00"),
+       "l" => Tomlrb::LocalDateTime.new(1979, 5, 27, 7, 32, 0)}],
+    "inline tables over several lines, with comments and a trailing comma" =>
+      ["t = {\n  a = 1, # one\n  b = { c = [2,\n3], },\n}\n", {"t" => {"a" => 1, "b" => {"c" => [2, 3]}}}]
+  }.each do |feature, (toml, expected)|
+    it "parses #{feature} by default, as TOML 1.1" do
+      _(Tomlrb.parse(toml)).must_equal expected
+    end
+
+    it "rejects #{feature} with version: \"1.0\"" do
+      _ { Tomlrb.parse(toml, version: "1.0") }.must_raise Tomlrb::ParseError
+    end
+  end
+
+  it "still rejects what 1.1 does not allow in inline tables and times" do
+    _ { Tomlrb.parse("t = {,}\n") }.must_raise Tomlrb::ParseError
+    _ { Tomlrb.parse("t = {a = 1,,}\n") }.must_raise Tomlrb::ParseError
+    _ { Tomlrb.parse("t = {a\n= 1}\n") }.must_raise Tomlrb::ParseError
+    _ { Tomlrb.parse("t = 07:32.5\n") }.must_raise Tomlrb::ParseError
+  end
+
+  it "only knows versions 1.0 and 1.1" do
+    _ { Tomlrb.parse("a = 1", version: "1.1.0") }.must_raise ArgumentError
+    _ { Tomlrb.parse("a = 1", version: 1.1) }.must_raise ArgumentError
   end
 end
 

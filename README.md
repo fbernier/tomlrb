@@ -3,7 +3,7 @@
 [![CI](https://github.com/fbernier/tomlrb/actions/workflows/ci.yml/badge.svg)](https://github.com/fbernier/tomlrb/actions/workflows/ci.yml)
 [![Gem Version](https://img.shields.io/gem/v/tomlrb)](https://rubygems.org/gems/tomlrb)
 
-A fast, pure-Ruby [TOML 1.0](https://toml.io/en/v1.0.0) parser with no runtime dependencies. It passes every TOML 1.0 case of the official [toml-test](https://github.com/toml-lang/toml-test) suite.
+A fast, pure-Ruby [TOML](https://toml.io) parser with no runtime dependencies, for [TOML 1.1](https://toml.io/en/v1.1.0) and [1.0](https://toml.io/en/v1.0.0). It passes every case of the official [toml-test](https://github.com/toml-lang/toml-test) suite for both versions.
 
 Requires Ruby 3.3 or later. Runs on CRuby (with or without YJIT), JRuby and TruffleRuby.
 
@@ -26,6 +26,13 @@ Tomlrb.load_file("config.toml", symbolize_keys: true)
 ```
 
 `Tomlrb.parse` also accepts an IO. Invalid documents raise `Tomlrb::ParseError` with the line and column; impossible dates and times raise `ArgumentError`.
+
+Documents are read as TOML 1.1, which accepts every valid TOML 1.0 document unchanged. Pass `version: "1.0"` to also reject what 1.1 added (`\e` and `\xHH` escapes, times without seconds, inline tables spanning lines or ending with a comma), for example when a file must stay readable by a 1.0-only parser:
+
+```ruby
+Tomlrb.parse("t = 07:32")                 # => {"t" => #<Tomlrb::LocalTime: 07:32:00>}
+Tomlrb.parse("t = 07:32", version: "1.0") # raises Tomlrb::ParseError
+```
 
 TOML values map to Ruby as follows:
 

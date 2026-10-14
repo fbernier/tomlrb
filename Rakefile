@@ -14,10 +14,14 @@ task :rbs do
   sh "rbs", "-I", "sig", "validate"
 end
 
-desc "Run the official toml-test runner (needs Go) against bin/toml-test-decoder"
+desc "Run the official toml-test runner (needs Go) for TOML 1.0 and 1.1 against bin/toml-test-decoder"
 task :toml_test do
-  decoder = "ruby #{File.expand_path("bin/toml-test-decoder", __dir__)}"
-  Dir.chdir("toml-test") { sh "go", "run", "./cmd/toml-test", "test", "-toml=1.0", "-decoder=#{decoder}" }
+  decoder = File.expand_path("bin/toml-test-decoder", __dir__)
+  Dir.chdir("toml-test") do
+    %w[1.0 1.1].each do |version|
+      sh "go", "run", "./cmd/toml-test", "test", "-toml=#{version}", "-decoder=ruby #{decoder} #{version}"
+    end
+  end
 end
 
 task default: %i[test standard rbs]

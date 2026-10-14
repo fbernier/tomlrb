@@ -4,6 +4,9 @@ module Tomlrb
   class ParseError < StandardError
   end
 
+  # TOML spec to follow; "1.0" also rejects what 1.1 added.
+  type version = "1.1" | "1.0"
+
   type key = String | Symbol
   type table = Hash[key, value]
   type value = String | Integer | Float | bool | Time | LocalDate | LocalDateTime | LocalTime | Array[value] | table
@@ -12,14 +15,14 @@ module Tomlrb
     def read: () -> String
   end
 
-  # Parses a TOML document. Keys are Strings, or Symbols with `symbolize_keys: true`.
-  def self.parse: (String | _Reader string_or_io, ?symbolize_keys: boolish) -> table
+  # Parses a TOML document (TOML 1.1 unless `version: "1.0"`). Keys are Strings, or Symbols with `symbolize_keys: true`.
+  def self.parse: (String | _Reader string_or_io, ?symbolize_keys: boolish, ?version: version) -> table
 
   # Reads a UTF-8 file and parses it.
-  def self.load_file: (path path, ?symbolize_keys: boolish) -> table
+  def self.load_file: (path path, ?symbolize_keys: boolish, ?version: version) -> table
 
   class Parser
-    def initialize: (String src, ?symbolize_keys: boolish) -> void
+    def initialize: (String src, ?symbolize_keys: boolish, ?version: version) -> void
     def parse: () -> table
   end
 

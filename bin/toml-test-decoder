@@ -3,14 +3,15 @@
 
 # Decoder for the official toml-test runner (https://github.com/toml-lang/toml-test):
 # reads TOML on stdin, prints its JSON description, exits 1 on invalid TOML.
+# The argument is the TOML version to follow (default 1.1).
 #
-#   toml-test test -decoder="ruby bin/toml-test-decoder"
+#   toml-test test -toml=1.1 -decoder="ruby bin/toml-test-decoder 1.1"
 
 require_relative "../lib/tomlrb"
 require_relative "../test/support/toml_test_json"
 
 begin
-  document = Tomlrb.parse($stdin.read)
+  document = Tomlrb.parse($stdin.read, version: ARGV.fetch(0, "1.1"))
 rescue Tomlrb::ParseError, ArgumentError, RangeError => e
   warn "#{e.class}: #{e.message}"
   exit 1
