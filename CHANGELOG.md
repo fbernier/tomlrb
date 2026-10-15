@@ -1,4 +1,4 @@
-### Unreleased
+### 2.0.5 - 2026-10-15
 
 * Fix exponential backtracking (ReDoS) when scanning unterminated basic and literal strings
 * Fix `SystemStackError` and quadratic scan time on long runs of spaces/tabs
