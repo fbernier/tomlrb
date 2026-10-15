@@ -14,9 +14,10 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/fbernier/tomlrb"
   spec.license       = "MIT"
 
-  spec.files         = %w{LICENSE.txt} + Dir.glob("lib/**/*", File::FNM_DOTMATCH).reject { |f| File.directory?(f) }
+  spec.files         = %w{LICENSE.txt} + Dir.glob("lib/**/*.rb")
   spec.require_paths = ["lib"]
   spec.required_ruby_version = '>= 2.0'
 
-  spec.add_development_dependency "psych", "~> 4"
+  # generated_parser.rb loads racc's runtime, a bundled (not default) gem since Ruby 3.3.
+  spec.add_dependency "racc", "~> 1.4"
 end

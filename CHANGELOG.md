@@ -4,6 +4,8 @@
 * Fix `SystemStackError` and quadratic scan time on long runs of spaces/tabs ([GHSA-mc56-vpwf-3m26](https://github.com/fbernier/tomlrb/security/advisories/GHSA-mc56-vpwf-3m26))
 * Literal strings no longer treat `\'` as an escaped quote, per the TOML spec
 * Add SECURITY.md: report vulnerabilities through GitHub private vulnerability reporting
+* Declare racc as a runtime dependency: Ruby 3.3 made it a bundled gem, so under Bundler `require "tomlrb"` failed unless the app's Gemfile pulled racc in
+* Stop shipping the unused `parser.y` grammar source in the gem
 
 Both vulnerabilities were reported by [@tsigouris007](https://github.com/tsigouris007), advised by [@kpatsakis](https://github.com/kpatsakis).
 
