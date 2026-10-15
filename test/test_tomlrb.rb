@@ -71,6 +71,28 @@ describe Tomlrb::Parser do
   it "raises an error when parsing table and others in a single line" do
     _{ Tomlrb.parse('[table] key = "value"') }.must_raise(Tomlrb::ParseError)
   end
+
+  it "rejects an unterminated basic string full of escapes without catastrophic backtracking" do
+    Timeout.timeout(5) do
+      _{ Tomlrb.parse("a = \"" + "\\a" * 10_000) }.must_raise(Tomlrb::ParseError)
+    end
+  end
+
+  it "rejects an unterminated literal string full of backslashes without catastrophic backtracking" do
+    Timeout.timeout(5) do
+      _{ Tomlrb.parse("a = '" + "\\" * 10_000) }.must_raise(Tomlrb::ParseError)
+    end
+  end
+
+  it "does not treat a backslash as an escape in literal strings" do
+    _{ Tomlrb.parse(%q(a = 'x\'y')) }.must_raise(Tomlrb::ParseError)
+  end
+
+  it "parses a long run of whitespace without recursing per character" do
+    Timeout.timeout(5) do
+      _(Tomlrb.parse(" \t" * 100_000)).must_equal({})
+    end
+  end
 end
 
 class TomlExamples

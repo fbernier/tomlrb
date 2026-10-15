@@ -9,15 +9,15 @@ module Tomlrb
     IDENTIFIER =
       /[A-Za-z0-9_-]+/.freeze
     SPACE =
-      /[ \t]/.freeze
+      /[ \t]+/.freeze
     NEWLINE =
       /(?:[ \t]*(?:\r?\n)[ \t]*)+/.freeze
     STRING_BASIC =
-      /(")(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F\\]|(?:\\[^\u0000-\u0008\u000A-\u001F\u007F]))*?\1/.freeze
+      /"(?:[^\u0000-\u0008\u000A-\u001F\u007F"\\]|\\[^\u0000-\u0008\u000A-\u001F\u007F])*"/.freeze
     STRING_MULTI =
       /"{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?(?<!\\)"{3,5})/m.freeze
     STRING_LITERAL =
-      /(')(?:\\?[^\u0000-\u0008\u000A-\u001F\u007F])*?\1/.freeze
+      /'[^\u0000-\u0008\u000A-\u001F\u007F']*'/.freeze
     STRING_LITERAL_MULTI =
       /'{3}([^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*?'{3,5})/m.freeze
     DATETIME =
