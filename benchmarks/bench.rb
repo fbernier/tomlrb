@@ -21,7 +21,7 @@ rescue LoadError
   false
 end
 
-files = ARGV.empty? ? [File.join(__dir__, "../test/example-v0.4.0.toml")] : ARGV
+files = ARGV.empty? ? [File.join(__dir__, "example.toml")] : ARGV
 docs = files.map { |file| File.read(file) }
 
 Benchmark.ips do |x|

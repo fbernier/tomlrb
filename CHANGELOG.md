@@ -18,7 +18,7 @@ Security:
 
 Performance:
 
-* Replace the Racc grammar with a hand-written single-pass parser; Racc is no longer used. Parsing executes 2.0-2.6x fewer instructions than perfect_toml 0.9.1 and 10-14x fewer than 2.0.4 (2.4-2.7x and 12-15x with YJIT)
+* Replace the Racc grammar with a hand-written single-pass parser; Racc is no longer used. Parsing executes 2.2-2.5x fewer instructions than perfect_toml 0.9.1 and 12-14x fewer than 2.0.4 (2.6-2.9x and 14-16x with YJIT)
 * Multi-line strings are scanned by searching for the closing quotes, a backslash or a control character: a 1 MB `"""` or `'''` string parses 25x faster, peak memory no longer grows by about 48 MB per MB of string, and quote-dense content (`ab"cd""ef`) no longer costs a step per quote
 
 Conformance (every TOML 1.0 and 1.1 case of toml-test 2.2.0 passes):

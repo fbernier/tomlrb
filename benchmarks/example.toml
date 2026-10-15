@@ -1,0 +1,202 @@
+# A TOML 1.0 document touching every value type and table form, sized like a
+# typical hand-written config file. It is the default input of the benchmarks;
+# toml-rb and perfect_toml must parse it too, so it uses nothing from TOML 1.1.
+
+title = "TOML Example"
+description = """
+A multi-line basic string. The first newline is trimmed, \
+and a line ending backslash joins the lines that follow it.
+Escapes work too: tab\there, quote \"here\", \u00e9 and \U0001F600."""
+regex = '<\i\c*\s*>'
+winpath = 'C:\Users\nodejs\templates'
+lines = '''
+Raw text keeps every \ backslash
+and every newline.
+'''
+
+[owner]
+name = "Tom Preston-Werner"
+"quoted key" = "value"
+'literal key' = "value"
+physical.color = "orange"
+physical.shape = "round"
+site."google.com" = true
+
+[database]
+enabled = true
+ports = [8000, 8001, 8002]
+data = [["delta", "phi"], [3.14]]
+temp_targets = {cpu = 79.5, case = 72.0}
+connection_max = 5_000
+timeout_ms = 2_500
+
+[servers]
+
+[servers.alpha]
+ip = "10.0.0.1"
+role = "frontend" # trailing comments are fine
+weights = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+[servers.beta]
+ip = "10.0.0.2"
+role = "backend"
+labels = ["eu-west", "ssd", "primary"]
+
+[numbers]
+int1 = +99
+int2 = 42
+int3 = 0
+int4 = -17
+int5 = 1_000_000
+hex1 = 0xDEADBEEF
+hex2 = 0xdead_beef
+oct1 = 0o01234567
+oct2 = 0o755
+bin1 = 0b11010110
+flt1 = +1.0
+flt2 = 3.1415
+flt3 = -0.01
+flt4 = 5e+22
+flt5 = 1e06
+flt6 = -2E-2
+flt7 = 6.626e-34
+flt8 = 224_617.445_991_228
+sf1 = inf
+sf2 = +inf
+sf3 = -inf
+sf4 = nan
+
+[dates]
+odt1 = 1979-05-27T07:32:00Z
+odt2 = 1979-05-27T00:32:00-07:00
+odt3 = 1979-05-27T00:32:00.999999-07:00
+odt4 = 1979-05-27 07:32:00Z
+ldt1 = 1979-05-27T07:32:00
+ldt2 = 1979-05-27T00:32:00.999999
+ld1 = 1979-05-27
+lt1 = 07:32:00
+lt2 = 00:32:00.999999
+
+[strings]
+str1 = "I'm a string."
+str2 = "You can \"quote\" me."
+str3 = "Name\tJos\u00E9\nLoc\tSF."
+str4 = """
+Roses are red
+Violets are blue"""
+str5 = """\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       """
+str6 = """Here are two quotation marks: "". Simple enough."""
+str7 = """Here are fifteen quotation marks: ""\"""\"""\"""\"""\"."""
+str8 = '''Here are fifteen quotation marks: """""""""""""""'''
+str9 = "Here are fifteen apostrophes: '''''''''''''''"
+str10 = ''''That,' she said, 'is still pointless.''''
+quoted = 'Tom "Dubs" Preston-Werner'
+
+[arrays]
+integers = [1, 2, 3]
+colors = ["red", "yellow", "green"]
+nested_arrays_of_ints = [[1, 2], [3, 4, 5]]
+nested_mixed_array = [[1, 2], ["a", "b", "c"]]
+string_array = ["all", 'strings', """are the same""", '''type''']
+numbers = [0.1, 0.2, 0.5, 1, 2, 5]
+contributors = [
+  "Foo Bar <foo@example.com>",
+  {name = "Baz Qux", email = "bazqux@example.com", url = "https://example.com/bazqux"},
+]
+multiline = [
+  1,
+  2, # a comment between elements
+  3,
+]
+
+[inline]
+name = {first = "Tom", last = "Preston-Werner"}
+point = {x = 1, y = 2}
+animal = {type.name = "pug"}
+nested = {a = {b = {c = [1, {d = true}]}}}
+
+[dependencies]
+serde = {version = "1.0", features = ["derive"]}
+tokio = {version = "1.38", features = ["full"], optional = true}
+regex = "1.10"
+rand = {version = "0.8", default-features = false}
+clap = {version = "4.5", features = ["derive", "env", "wrap_help"]}
+
+[[products]]
+name = "Hammer"
+sku = 738594937
+
+[[products]] # an empty table within the array
+
+[[products]]
+name = "Nail"
+sku = 284758393
+color = "gray"
+
+[[fruits]]
+name = "apple"
+
+[fruits.physical]
+color = "red"
+shape = "round"
+
+[[fruits.varieties]]
+name = "red delicious"
+
+[[fruits.varieties]]
+name = "granny smith"
+
+[[fruits]]
+name = "banana"
+
+[[fruits.varieties]]
+name = "plantain"
+
+[logging]
+level = "info"
+format = "json"
+targets = ["stdout", "file"]
+file.path = "/var/log/app/app.log"
+file.rotate = {max_size_mb = 100, keep = 7, compress = true}
+
+[http]
+bind = "0.0.0.0:8080"
+read_timeout = "30s"
+write_timeout = "30s"
+cors.allowed_origins = ["https://example.com", "https://admin.example.com"]
+cors.allowed_methods = ["GET", "POST", "PUT", "DELETE"]
+cors.max_age = 3600
+tls = {enabled = false, cert = "/etc/ssl/app.pem", key = "/etc/ssl/app.key"}
+
+[[http.routes]]
+path = "/api/v1/users"
+methods = ["GET", "POST"]
+rate_limit = {requests = 100, per_seconds = 60}
+
+[[http.routes]]
+path = "/api/v1/orders"
+methods = ["GET"]
+cache = {ttl_seconds = 300, vary = ["Accept", "Authorization"]}
+
+[cache]
+backend = "redis"
+url = "redis://localhost:6379/0"
+pool_size = 16
+ttl = 3_600
+
+[features]
+default = ["json", "tls"]
+json = []
+tls = ["dep:rustls"]
+experimental = {enabled = false, since = 2024-03-01, owners = ["platform"]}
+
+# Defining a super-table after its sub-tables is allowed.
+[x.y.z.w]
+deep = true
+
+[x]
+shallow = true

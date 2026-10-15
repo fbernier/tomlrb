@@ -54,7 +54,7 @@ test_file = ->(name) { File.read(File.join(__dir__, "../test", name)) }
 
 # Each workload is a list of documents; one "parse" parses all of them.
 WORKLOADS = {
-  "example" => [test_file.call("example-v0.4.0.toml")],
+  "example" => [File.read(File.join(__dir__, "example.toml"))],
   "cargo_toml" => [test_file.call("Cargo.toml")],
   "small_docs" => Array.new(500) { |i| %(name = "doc#{i}"\nversion = #{i}\n\n[meta]\nok = true\n) },
   "plain_strings" => [Array.new(1000) { |i| %(k#{i} = "#{text.call(60)}"\n) }.join],

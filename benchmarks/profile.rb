@@ -14,7 +14,7 @@ end
 require "tmpdir"
 require_relative "../lib/tomlrb"
 
-data = File.read(ARGV.fetch(0, File.join(__dir__, "../test/example-v0.4.0.toml")))
+data = File.read(ARGV.fetch(0, File.join(__dir__, "example.toml")))
 iterations = Integer(ARGV.fetch(1, "2000"))
 out = File.join(Dir.tmpdir, "tomlrb-profile.json")
 
