@@ -1,8 +1,11 @@
 ### 2.0.5 - 2026-10-15
 
-* Fix exponential backtracking (ReDoS) when scanning unterminated basic and literal strings
-* Fix `SystemStackError` and quadratic scan time on long runs of spaces/tabs
+* Fix exponential backtracking (ReDoS) when scanning unterminated basic and literal strings ([GHSA-gq8g-3x53-v8fh](https://github.com/fbernier/tomlrb/security/advisories/GHSA-gq8g-3x53-v8fh))
+* Fix `SystemStackError` and quadratic scan time on long runs of spaces/tabs ([GHSA-mc56-vpwf-3m26](https://github.com/fbernier/tomlrb/security/advisories/GHSA-mc56-vpwf-3m26))
 * Literal strings no longer treat `\'` as an escaped quote, per the TOML spec
+* Add SECURITY.md: report vulnerabilities through GitHub private vulnerability reporting
+
+Both vulnerabilities were reported by [@tsigouris007](https://github.com/tsigouris007), advised by [@kpatsakis](https://github.com/kpatsakis).
 
 ### 2.0.4 - 2025-12-18
 
