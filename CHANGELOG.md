@@ -1,6 +1,6 @@
-### Unreleased
+### 3.0.0 - 2026-10-15
 
-Breaking changes (release as 3.0.0):
+Breaking changes:
 
 * Require Ruby 3.3 or later
 * Read documents as TOML 1.1 by default. Every valid TOML 1.0 document parses unchanged; 1.1 additionally accepts `\e` and `\xHH` escapes, times without seconds, and inline tables that span lines, contain comments or end with a comma. `version: "1.0"` keeps rejecting those
