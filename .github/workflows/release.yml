@@ -1,0 +1,29 @@
+name: release
+
+# Publishes the version in lib/tomlrb/version.rb to RubyGems.org through trusted
+# publishing (https://guides.rubygems.org/trusted-publishing/): `rake release`
+# builds the gem, pushes the vX.Y.Z tag and the gem. Run it manually once the
+# version bump and CHANGELOG entry are on master.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: rubygems.org
+    permissions:
+      id-token: write # trusted publishing
+      contents: write # `rake release` pushes the version tag
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ruby
+          bundler-cache: true
+      - uses: rubygems/release-gem@v1

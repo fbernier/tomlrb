@@ -1,0 +1,6 @@
+ruby_version: 3.3
+
+ignore:
+  # The scanner loops are `while true`: Kernel#loop costs a block call per iteration.
+  - "lib/tomlrb/parser.rb":
+      - Style/InfiniteLoop

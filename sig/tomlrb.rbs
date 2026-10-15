@@ -1,0 +1,75 @@
+module Tomlrb
+  VERSION: String
+
+  class ParseError < StandardError
+  end
+
+  # TOML spec to follow; "1.0" also rejects what 1.1 added.
+  type version = "1.1" | "1.0"
+
+  type key = String | Symbol
+  type table = Hash[key, value]
+  type value = String | Integer | Float | bool | Time | LocalDate | LocalDateTime | LocalTime | Array[value] | table
+
+  interface _Reader
+    def read: () -> String
+  end
+
+  # Parses a TOML document (TOML 1.1 unless `version: "1.0"`). Keys are Strings, or Symbols with `symbolize_keys: true`.
+  def self.parse: (String | _Reader string_or_io, ?symbolize_keys: boolish, ?version: version) -> table
+
+  # Reads a UTF-8 file and parses it.
+  def self.load_file: (path path, ?symbolize_keys: boolish, ?version: version) -> table
+
+  class Parser
+    def initialize: (String src, ?symbolize_keys: boolish, ?version: version) -> void
+    def parse: () -> table
+  end
+
+  class LocalDate
+    def self.valid_date?: (Integer year, Integer month, Integer day) -> bool
+
+    attr_reader year: Integer
+    attr_reader month: Integer
+    attr_reader day: Integer
+
+    def initialize: (int | String year, int | String month, int | String day) -> void
+    def to_time: (?String | Integer | nil offset) -> Time
+    def to_s: () -> String
+    def ==: (untyped other) -> bool
+    def inspect: () -> String
+  end
+
+  class LocalDateTime
+    def initialize: (int | String year, int | String month, int | String day,
+                     int | String hour, int | String min, Numeric sec) -> void
+    def year: () -> Integer
+    def month: () -> Integer
+    def day: () -> Integer
+    def hour: () -> Integer
+    def min: () -> Integer
+    def sec: () -> Integer
+    def usec: () -> Integer
+    def nsec: () -> Integer
+    def to_time: (?String | Integer | nil offset) -> Time
+    def to_s: () -> String
+    def ==: (untyped other) -> bool
+    def inspect: () -> String
+  end
+
+  class LocalTime
+    # `hh:mm:ss`, plus `.` and the fraction digits if `sec` has any.
+    def self.format: (Integer hour, Integer min, Numeric sec) -> String
+
+    def initialize: (int | String hour, int | String min, Numeric sec) -> void
+    def hour: () -> Integer
+    def min: () -> Integer
+    def sec: () -> Integer
+    def usec: () -> Integer
+    def nsec: () -> Integer
+    def to_time: (int year, int month, int day, ?String | Integer | nil offset) -> Time
+    def to_s: () -> String
+    def ==: (untyped other) -> bool
+    def inspect: () -> String
+  end
+end

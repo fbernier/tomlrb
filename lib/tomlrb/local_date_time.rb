@@ -1,44 +1,57 @@
-# frozen-string-literal: true
+# frozen_string_literal: true
 
-require 'forwardable'
+require "forwardable"
+require_relative "local_date"
+require_relative "local_time"
 
 module Tomlrb
+  # A TOML local date-time (no offset), e.g. `1979-05-27T07:32:00.999999`.
   class LocalDateTime
     extend Forwardable
 
-    def_delegators :@time, :year, :month, :day, :hour, :min, :sec, :usec, :nsec
+    attr_reader :year, :month, :day, :hour, :min
 
+    def_delegators :to_time, :sec, :usec, :nsec
+
+    # Fields are validated here; the Time behind them is built on first use.
+    #
+    # @param sec [Integer, Rational, Float] seconds, fraction included
     def initialize(year, month, day, hour, min, sec) # rubocop:disable Metrics/ParameterLists
-      @time = Time.utc(year, month, day, hour, min, sec)
-      raise ArgumentError, "Invalid Local Date-Time: #{year}-#{month}-#{day}T#{hour}:#{min}:#{sec}" unless min.to_i == @time.min && hour.to_i == @time.hour && day.to_i == @time.day && month.to_i == @time.month && year.to_i == @time.year
-
+      @year = year.to_i
+      @month = month.to_i
+      @day = day.to_i
+      @hour = hour.to_i
+      @min = min.to_i
       @sec = sec
+      raise ArgumentError, "Invalid Local Date-Time: #{self}" unless
+        LocalDate.valid_date?(@year, @month, @day) && @hour < 24 && @min < 60 && sec < 60
     end
 
-    # @param offset [String, Symbol, Numeric, nil] time zone offset.
-    #   * when +String+, must be '+HH:MM' format, '-HH:MM' format, 'UTC', 'A'..'I' or 'K'..'Z'. Arguments excluding '+-HH:MM' are supporeted at Ruby >= 2.7.0
-    #   * when +Symbol+, must be +:dst+(for summar time for local) or +:std+(for standard time).
-    #   * when +Numeric+, it is time zone offset in second.
-    #   * when +nil+, local time zone offset is used.
-    # @return [Time]
-    def to_time(offset = '-00:00')
-      return @time if offset == '-00:00'
-      Time.new(year, month, day, hour, min, @sec, offset)
+    # @param offset [String, Integer, nil] UTC offset as accepted by Time.new
+    #   ("+09:00", "UTC", "Z", seconds east of UTC, or nil for the local zone)
+    # @return [Time] this date-time at the given offset (UTC by default)
+    def to_time(offset = "-00:00")
+      return @time ||= Time.utc(@year, @month, @day, @hour, @min, @sec) if offset == "-00:00"
+
+      Time.new(@year, @month, @day, @hour, @min, @sec, offset)
     end
 
     def to_s
-      frac = (@sec - sec)
-      frac_str = frac.zero? ? '' : frac.to_s[1..-1]
-      @time.strftime('%FT%T') << frac_str
+      format("%04d-%02d-%02dT", @year, @month, @day) << LocalTime.format(@hour, @min, @sec)
     end
 
     def ==(other)
-      other.is_a?(self.class) &&
-        to_time == other.to_time
+      other.is_a?(self.class) && @year == other.year && @month == other.month && @day == other.day &&
+        @hour == other.hour && @min == other.min && @sec == other.seconds
     end
 
     def inspect
       "#<#{self.class}: #{self}>"
     end
+
+    protected
+
+    # Seconds with their fraction; #sec is the whole part only, like Time#sec.
+    def seconds = @sec
   end
 end

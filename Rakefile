@@ -1,19 +1,27 @@
-# To avoid stack level too deep error on loading
-# toml-spec-tests/values/qa-table-inline-nested-1000.yaml
-ENV["RUBY_THREAD_VM_STACK_SIZE"] = "1100000"
+# frozen_string_literal: true
 
 require "bundler/gem_tasks"
-require 'rake/testtask'
+require "minitest/test_task"
+require "standard/rake"
 
-Rake::TestTask.new do |t|
-  t.libs << "test"
-  t.test_files = FileList['test/test*.rb']
-  t.verbose = true
+Minitest::TestTask.create do |t|
+  t.test_globs = ["test/test_*.rb"]
+  t.warning = true
 end
-task test: :compile
 
-task default: [:test]
-
-task :compile do
-  sh 'racc lib/tomlrb/parser.y -o lib/tomlrb/generated_parser.rb'
+desc "Validate the RBS signatures in sig/"
+task :rbs do
+  sh "rbs", "-I", "sig", "validate"
 end
+
+desc "Run the official toml-test runner (needs Go) for TOML 1.0 and 1.1 against bin/toml-test-decoder"
+task :toml_test do
+  decoder = File.expand_path("bin/toml-test-decoder", __dir__)
+  Dir.chdir("toml-test") do
+    %w[1.0 1.1].each do |version|
+      sh "go", "run", "./cmd/toml-test", "test", "-toml=#{version}", "-decoder=ruby #{decoder} #{version}"
+    end
+  end
+end
+
+task default: %i[test standard rbs]

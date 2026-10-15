@@ -1,23 +1,37 @@
 #!/usr/bin/env ruby
-require 'benchmark/ips'
+# frozen_string_literal: true
 
-$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
-require 'tomlrb'
-begin
-  require 'toml-rb'
+# Compares Tomlrb.parse with other parsers that are installed. One iteration
+# parses every given file, so a corpus can be passed as a glob.
+#
+#   ruby benchmarks/bench.rb [file.toml...]
+
+require "benchmark/ips"
+require_relative "../lib/tomlrb"
+
+# Other parsers are compared when installed (`gem install toml-rb perfect_toml`).
+others = {
+  "emancu/toml-rb" => ["toml-rb", -> { TomlRB }],
+  "mame/perfect_toml" => ["perfect_toml", -> { PerfectTOML }]
+}.select do |name, (feature, _)|
+  require feature
+  true
 rescue LoadError
-  puts "Install toml-rb using 'gem install toml-rb' first."
+  warn("Skipping #{name}: gem install #{feature}")
+  false
 end
 
-data = File.read(File.join(__dir__, '../test/example-v0.4.0.toml'))
+files = ARGV.empty? ? [File.join(__dir__, "example.toml")] : ARGV
+docs = files.map { |file| File.read(file) }
 
 Benchmark.ips do |x|
-  x.report('emancu/toml-rb') do
-    TomlRB.parse(data)
+  others.each do |name, (_, parser)|
+    klass = parser.call
+    x.report(name) { docs.each { |doc| klass.parse(doc) } }
   end
 
-  x.report('fbernier/tomlrb') do
-    Tomlrb.parse(data)
+  x.report("fbernier/tomlrb") do
+    docs.each { |doc| Tomlrb.parse(doc) }
   end
 
   x.compare!

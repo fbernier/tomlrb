@@ -1,3 +1,43 @@
+### 3.0.0 - 2026-10-15
+
+Breaking changes:
+
+* Require Ruby 3.3 or later
+* Read documents as TOML 1.1 by default. Every valid TOML 1.0 document parses unchanged; 1.1 additionally accepts `\e` and `\xHH` escapes, times without seconds, and inline tables that span lines, contain comments or end with a comma. `version: "1.0"` keeps rejecting those
+* Fractional seconds are exact `Rational`s instead of `Float`s: `Time`, `LocalDateTime` and `LocalTime` values carry `56.123`, not `56.122999…`
+* Remove `Tomlrb::Scanner`, `Tomlrb::Handler`, `Tomlrb::StringUtils`, `Tomlrb::GeneratedParser`, `Tomlrb::Keys` and `Tomlrb::Key`; `Tomlrb::Parser.new` now takes the document string. Key redefinitions raise `Tomlrb::ParseError` as before
+* `require "tomlrb"` no longer loads `time` and `stringio`
+
+Features:
+
+* TOML 1.1 support, selected with `version: "1.1"` (default) or `"1.0"`
+
+Security:
+
+* Nesting depth of arrays and inline tables is limited only by memory: they are parsed with an explicit stack
+
+Performance:
+
+* Replace the Racc grammar with a hand-written single-pass parser; Racc is no longer used. Parsing executes 2.2-2.5x fewer instructions than perfect_toml 0.9.1 and 12-14x fewer than 2.0.4 (2.6-2.9x and 14-16x with YJIT)
+* Multi-line strings are scanned by searching for the closing quotes, a backslash or a control character: a 1 MB `"""` or `'''` string parses 25x faster, peak memory no longer grows by about 48 MB per MB of string, and quote-dense content (`ab"cd""ef`) no longer costs a step per quote
+
+Conformance (every TOML 1.0 and 1.1 case of toml-test 2.2.0 passes):
+
+* An escaped backslash right before a closing `"""` (`"""x\\"""`) ends the string
+* Reject a carriage return not followed by a line feed in multi-line strings, and trim a CRLF (not just LF) right after an opening `"""` or `'''`
+* Parse bare keys that start with `true`, `false`, `inf` or `nan` (`trueval`, `inf-x`) or look like dates and numbers (`1979-05-27a`, `0x1f`, `[[1e5]]`), and reject keys containing `:`
+* Reject empty values in inline tables (`{a = }`), inline tables that are not assigned to a key, and dotted keys that extend an inline table
+* Reject spaced array-of-tables brackets (`[ [a]]`, `[[a] ]`) on indented and CRLF lines too, and stop rejecting multi-line arrays whose line starts with `[ [`
+* Separate date and time only with `T`, `t` or a space, accept an offset only after a time, and reject negative years and days that do not exist (`1979-06-31T00:00:00-00:00`)
+* Reject floats with leading zeros (`01e5`) and accept underscores in exponents (`1e1_0`)
+
+Other:
+
+* Parse errors report the line and column (in characters)
+* `benchmarks/matrix.rb` measures time, allocations and peak memory over a set of generated workloads; `benchmarks/bench.rb` accepts several files
+* `LocalDate`, `LocalDateTime` and `LocalTime` validate their fields arithmetically and build their `Time` on first use
+* Ship RBS type signatures in `sig/`
+
 ### 2.0.5 - 2026-10-15
 
 * Fix exponential backtracking (ReDoS) when scanning unterminated basic and literal strings ([GHSA-gq8g-3x53-v8fh](https://github.com/fbernier/tomlrb/security/advisories/GHSA-gq8g-3x53-v8fh))
